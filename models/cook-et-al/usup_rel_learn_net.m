@@ -35,11 +35,15 @@ if DATASET == 0
     DATASET_LEN     = length(sensory_data.x);
 else
     % select the dataset of interest
-    experiment_dataset = 2; % {1, 2, 3, 4, 5, 6}
+    experiment_dataset = 6; % {1, 2, 3, 4, 5, 6}
     % read from sample datasets
     switch experiment_dataset
         case 1
-            % Rodallec, Anne, Giacometti, Sarah, Ciccolini, Joseph, & Fanciullino, Raphaëlle. (2019). Tumor growth kinetics of human MDA-MB-231 cells transfected with dTomato lentivirus [Data set]. Zenodo. http://doi.org/10.5281/zenodo.3593919
+            
+            % Rodallec, Anne, Giacometti, Sarah, Ciccolini, Joseph, & Fanciullino, Raphaëlle. (2019).
+            % Tumor growth kinetics of human MDA-MB-231 cells transfected with dTomato lentivirus [Data set].
+            % Zenodo. http://doi.org/10.5281/zenodo.3593919
+            
             filename = '..\..\datasets\1\MDA-MB-231dTomato.csv';
             delimiter = ',';
             startRow = 2;
@@ -64,7 +68,11 @@ else
             sensory_data.y =  MDAMB231dTomato.Observation(MDAMB231dTomato.ID == ID);
             
         case 2
-            % Gaddy, Thomas D.; Wu, Qianhui; Arnheim, Alyssa D.; D. Finley, Stacey (2017): Mechanistic modeling quantifies the influence of tumor growth kinetics on the response to anti-angiogenic treatment. PLOS Computational Biology. Dataset. https://doi.org/10.1371/journal.pcbi.1005874
+            
+            % Gaddy, Thomas D.; Wu, Qianhui; Arnheim, Alyssa D.; D. Finley, Stacey (2017)
+            % Mechanistic modeling quantifies the influence of tumor growth kinetics on the response to anti-angiogenic treatment.
+            % PLOS Computational Biology. Dataset. https://doi.org/10.1371/journal.pcbi.1005874
+            
             % Import the data
             [~, ~, raw] = xlsread('..\..\datasets\2\S1_Table.xls','S1_Table','A2:L15');
             raw(cellfun(@(x) ~isempty(x) && isnumeric(x) && isnan(x),raw)) = {''};
@@ -93,15 +101,149 @@ else
             % Clear temporary variables
             clearvars data raw R;
             
-            % TODO Add filtering for sub-dataset
+            % Add filtering for sub-dataset
+            study_id = 'Zibara'; % {Roland, Zibara, Volk08, Tan, Volk11a, Volk11b}
+            switch study_id
+                case 'Roland'
+                    sensory_data.x = S1Table.RolandTimedays;
+                    sensory_data.y = S1Table.RolandVolumecm3;
+                case 'Zibara'
+                    sensory_data.x = S1Table.ZibaraTimedays;
+                    sensory_data.y = S1Table.ZibaraVolumecm3;
+                case 'Volk08'
+                    sensory_data.x = S1Table.Volk2008Timedays;
+                    sensory_data.y = S1Table.Volk2008Volumecm3;
+                case 'Tan'
+                    sensory_data.x = S1Table.TanTimedays;
+                    sensory_data.y = S1Table.TanVolumecm3;
+                case 'Volk11a'
+                    sensory_data.x = S1Table.Volk2011aTimedays;
+                    sensory_data.y = S1Table.Volk2011aVolumecm3;
+                case 'Volk11b'
+                    sensory_data.x = S1Table.Volk2011bTimedays;
+                    sensory_data.y = S1Table.Volk2011bVolumecm3;
+            end
             
         case 3
-            % TODO
+            
+            % Mastri, Michalis, Tracz, Amanda, & Ebos, John ML. (2019).
+            % Tumor growth kinetics of human LM2-4LUC+ triple negative breast carcinoma cells [Data set].
+            % Zenodo. http://doi.org/10.5281/zenodo.3574531
+            
+            filename = '..\..\datasets\3\LM2-4LUC.csv';
+            delimiter = ',';
+            startRow = 2;
+            formatSpec = '%f%f%f%[^\n\r]';
+            % Open the text file.
+            fileID = fopen(filename,'r');
+            dataArray = textscan(fileID, formatSpec, 'Delimiter', delimiter, 'TextType', 'string', 'HeaderLines' ,startRow-1, 'ReturnOnError', false, 'EndOfLine', '\r\n');
+            % Close the text file.
+            fclose(fileID);
+            
+            % Create output variable for table import
+            LM24LUC = table(dataArray{1:end-1}, 'VariableNames', {'ID','Time','Observation'});
+            % for numeric array import
+            % LM24LUC = [dataArray{1:end-1}];
+            
+            % Clear temporary variables
+            clearvars filename delimiter startRow formatSpec fileID dataArray ans;
+            
+            % check which ID one needs
+            ID = 60; % ID is one of {0, 1, 2, 3, 4, 5, ..., 65}
+            sensory_data.x =  LM24LUC.Time(LM24LUC.ID == ID);
+            sensory_data.y =  LM24LUC.Observation(LM24LUC.ID == ID);
+            
         case 4
-            % TODO
+            
+            % Benzekry, Sebastien, Lamont, Clare, Weremowicz, Janusz, Beheshti, Afshin, Hlatky, Lynn, & Hahnfeldt, Philip. (2019).
+            % Tumor growth kinetics of subcutaneously implanted Lewis Lung carcinoma cells [Data set].
+            % PLoS Computational Biology. Zenodo. http://doi.org/10.5281/zenodo.3572401
+            
+            % Initialize variables.
+            filename = '..\..\datasets\4\LLC_sc_CCSB.csv';
+            delimiter = ',';
+            startRow = 2;
+            formatSpec = '%f%f%f%[^\n\r]';
+            
+            % Open the text file.
+            fileID = fopen(filename,'r');
+            dataArray = textscan(fileID, formatSpec, 'Delimiter', delimiter, 'TextType', 'string', 'HeaderLines' ,startRow-1, 'ReturnOnError', false, 'EndOfLine', '\r\n');
+            fclose(fileID);
+            
+            
+            % Create output variable as table
+            LLCscCCSB = table(dataArray{1:end-1}, 'VariableNames', {'ID','Time','Vol'});
+            % or import as numeric array
+            %LLCscCCSB = [dataArray{1:end-1}];
+            
+            % Clear temporary variables
+            clearvars filename delimiter startRow formatSpec fileID dataArray ans;
+            
+            % check which ID one needs
+            ID = 2; % ID is one of {1, 2, 3, 4, 5, ..., 20}
+            sensory_data.x =  LLCscCCSB.Time(LLCscCCSB.ID == ID);
+            sensory_data.y =  LLCscCCSB.Vol(LLCscCCSB.ID == ID);
+            
         case 5
-            % TODO
+            
+            % Wu, Qianhui; Arnheim, Alyssa D.; D. Finley, Stacey (2018)
+            % In silico mouse study identifies tumour growth kinetics as biomarkers for the outcome of anti-angiogenic treatment.
+            % The Royal Society. Dataset. https://doi.org/10.6084/m9.figshare.6931394.v1
+            
+            % Import the data
+            [~, ~, raw] = xlsread('..\..\datasets\5\rsif20180243_si_003.xls','Table S1','A2:C14');
+            
+            % Create output variable
+            data = reshape([raw{:}],size(raw));
+            
+            % Create table to import data
+            rsif20180243si003 = table;
+            % Allocate imported array to column variable names
+            rsif20180243si003.day = data(:,1);
+            rsif20180243si003.increase = data(:,2);
+            rsif20180243si003.relativetumorvolumetoday8 = data(:,3);
+            
+            % or import as numeric array
+            % rsif20180243si003 = reshape([raw{:}],size(raw));
+            
+            % Clear temporary variables
+            clearvars data raw;
+            
+            % populate the data structure
+            sensory_data.x = rsif20180243si003.day;
+            sensory_data.y = rsif20180243si003.relativetumorvolumetoday8;
+            
         case 6
+            
+            % Simpson-Herren, Linda, and Harris H. Lloyd.
+            % Kinetic parameters and growth curves for experimental tumor systems.
+            % Cancer Chemother Rep 54.3 (1970): 143-74.
+            
+            % Initialize variables.
+            filename = '..\..\datasets\6\plasmacytoma.csv';
+            delimiter = ',';
+            startRow = 2;
+            formatSpec = '%f%f%f%f%[^\n\r]';
+            
+            % Open the text file.
+            fileID = fopen(filename,'r');
+            dataArray = textscan(fileID, formatSpec, 'Delimiter', delimiter, 'TextType', 'string', 'HeaderLines' ,startRow-1, 'ReturnOnError', false, 'EndOfLine', '\r\n');
+            
+            % Close the text file.
+            fclose(fileID);
+
+            % Create output variable as table import
+            plasmacytoma = table(dataArray{1:end-1}, 'VariableNames', {'size','std','mass','day'});
+            % or as a numeric array 
+            % plasmacytoma = [dataArray{1:end-1}];
+
+            % Clear temporary variables
+            clearvars filename delimiter startRow formatSpec fileID dataArray ans;
+            
+            % populate the data structure
+            sensory_data.x = plasmacytoma.day;
+            sensory_data.y = plasmacytoma.mass;
+            
     end
     % change range
     sensory_data.range  = 1.0;
@@ -128,8 +270,7 @@ end
 % re-assign data
 sensory_data.x = datax_extrapolated;
 sensory_data.y = datay_extrapolated;
-DATASET_LEN     = length(sensory_data.x);
-%% INIT NETWORK DYNAMICS
+DATASET_LEN     = length(sensory_data.x);%% INIT NETWORK DYNAMICS
 % epoch iterator in outer loop (HL, HAR)
 t       = 1;
 % network iterator in inner loop (WTA)
