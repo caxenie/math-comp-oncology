@@ -13,16 +13,17 @@ clear;
 close all;
 global T M r K model miu
 % choose model
-%% 'logistic', 'vonBertalanffy', 'Gompertz', 'Bernoulli'
-model =  'Bernoulli'; 
+%% 'logistic', 'vonBertalanffy', 'Gompertz', 'Bernoulli', 'Holling'
+model =  'Holling'; 
 x0=[0.8; 5];
 [min, ~]=fminsearch(@er,x0,optimset('TolX',1e-6,'MaxIter',200));
 r = min(1); 
 K = min(2);
 miu = 2.7;
+k = 0.05;
 % choose model
-%% @logistic, @vonbertalanffy, @gompertz, @bernoulli
-[t,y]=ode23s(@bernoulli,[1 5],0.5); 
+%% @logistic, @vonbertalanffy, @gompertz, @bernoulli, @holling
+[t,y]=ode23s(@holling,[1 5],0.5); 
 plot(t,y,T,M,'r*');
 set(gcf, 'color', 'w');
 title(sprintf('%s growth model', model));
@@ -33,7 +34,7 @@ end
 
 %function for ode solver
 function z=er(x)
-global T M r K model miu
+global T M r K model miu k
 tt=0:1:60;
 % data points from experiment
 T=[1,2,3,4,5]'; 
@@ -41,6 +42,7 @@ M=[0.5,1,3,4,4.5]';
 r=x(1); 
 K=x(2);
 miu = 2.7;
+k = 0.05;
 y0 = 0.1; 
 switch model
     case 'logistic'
@@ -51,6 +53,8 @@ switch model
         [~, y1] = ode23s(@gompertz, tt, y0);
     case 'Bernoulli'
         [~, y1] = ode23s(@bernoulli, tt, y0);
+    case 'Holling'
+        [~, y1] = ode23s(@holling, tt, y0);
 end
 z=sum((y1(T)-M).^2); % minimize the squared error criteria
 end
@@ -81,4 +85,11 @@ function yp = bernoulli(~,y)
 global r K miu
 yp = y; 
 yp(1) = r*y(1)*(1 - (y(1)^(miu - 1))/K);
+end
+
+% Holling type 2 model
+function yp = holling(~,y)
+global r K k
+yp = y; 
+yp(1) = r*y(1)*((K - (k + y(1)))/(K*(k+y(1))));
 end
