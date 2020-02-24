@@ -414,5 +414,5 @@ populations(2).Wcross = populations(2).Wcross ./ max(populations(2).Wcross(:));
 lrn_fct = visualize_results(sensory_data, populations, learning_params);
 % save runtime data in a file for later analysis
 runtime_data_file = sprintf('runtime_data_%d_soms_%d_neurons_%d_samples_data_dist_%s_%s_train_epochs_%d.mat',...
-    N_SOM, N_NEURONS, N_SAMPLES, sensory_data.dist, sensory_data.nufrnd_type, MAX_EPOCHS_XMOD_LRN);
+    N_SOM, N_NEURONS, N_SAMPLES,"", "", MAX_EPOCHS_XMOD_LRN);
 save(runtime_data_file);

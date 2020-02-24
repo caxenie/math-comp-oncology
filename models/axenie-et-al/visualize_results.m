@@ -1,25 +1,39 @@
 % function to visualize network data at a given iteration in runtime
 function id_maxv = visualize_results(sensory_data, populations, learning_params)
+%% hidden function, learnt function and overlyed max value ot decode
 figure;
 set(gcf, 'color', 'white');
 % sensory data
 subplot(4, 1, [1 2]);
-plot(sensory_data.x, sensory_data.y, '.g'); xlabel('X'); ylabel('Y'); box off;
-title('Encoded relation');
-% learned realtionship encoded in the Hebbian links
-subplot(4, 1, [3 4]);
+plot(sensory_data.x, sensory_data.y, '-g'); xlabel('X'); ylabel('Y'); box off;
 % extract the max weight on each row (if multiple the first one)
 id_maxv = zeros(populations(1).lsize, 1);
 for idx = 1:populations(1).lsize
     [~, id_maxv(idx)] = max(populations(1).Wcross(idx, :));
 end
-imagesc((populations(1).Wcross)', [0, 1]); box off; colorbar;
+% update range for visualization
+minVal = min(id_maxv);
+maxVal = max(id_maxv);
+id_maxv = (((id_maxv - minVal) * (1 - (-1))) / (maxVal - minVal)) + (-1);
+% adjust interpolation to match data size
+upsample_factor = 10;
+datax = id_maxv';
+idx_data = 1:length(datax);
+idx_upsampled_data = 1:1/upsample_factor:length(datax);
+datax_extrapolated = interp1(idx_data, datax, idx_upsampled_data, 'linear');
+% get the error and plot it as errorbar
+deviation = sensory_data.y - datax_extrapolated;
+hold on; 
+% plot(sensory_data.x, datax_extrapolated,'r.', 'LineWidth', 2);
+errorbar(sensory_data.x(1:20:end), datax_extrapolated(1:20:end), deviation(1:20:end));
+title('Output Analysis');
+legend('Encoded relation','Decoded learnt relation');
+% learned realtionship encoded in the Hebbian links
+subplot(4, 1, [3 4]);
 % for 3rd order or higher order add some overlay
-% imagesc(rot90(populations(1).Wcross), [0, 1]); box off; colorbar;
-% hold on; plot(1:populations(1).lsize, rot90(id_maxv') ,'r', 'LineWidth', 2);
-% hold on; plot(1:populations(1).lsize, rot90(id_maxv') ,'ok', 'MarkerFaceColor','k');
+imagesc(rot90(populations(1).Wcross), [0, 1]); box off; colorbar;
 xlabel('neuron index'); ylabel('neuron index');
-% learning parameters in different figures
+%% learning parameters in different figures
 figure; set(gcf, 'color', 'w');
 plot(learning_params.alphat, 'k', 'LineWidth', 3); box off; ylabel('SOM Learning rate'); 
 xlabel('SOM training epochs'); 
