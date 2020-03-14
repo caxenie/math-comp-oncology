@@ -38,16 +38,16 @@ if DATASET == 0
     DATASET_LEN     = length(sensory_data.x);
 else
     % select the dataset of interest
-    experiment_dataset = 5; % {1, 2, 3, 4, 5, 6}
+    experiment_dataset = 6; % {1, 2, 3, 4, 5, 6}
     % read from sample datasets
     switch experiment_dataset
         case 1
             
-            % Rodallec, Anne, Giacometti, Sarah, Ciccolini, Joseph, & Fanciullino, Rapha�lle. (2019).
+            % Rodallec, Anne, Giacometti, Sarah, Ciccolini, Joseph, & Fanciullino, Raphaelle. (2019).
             % Tumor growth kinetics of human MDA-MB-231 cells transfected with dTomato lentivirus [Data set].
             % Zenodo. http://doi.org/10.5281/zenodo.3593919
             
-            filename = '../../datasets/1/MDA-MB-231dTomato.csv';
+            filename = ['..' filesep '..' filesep 'datasets' filesep '1' filesep 'MDA-MB-231dTomato.csv'];
             delimiter = ',';
             startRow = 2;
             formatSpec = '%f%f%f%[^\n\r]';
@@ -77,7 +77,7 @@ else
             % PLOS Computational Biology. Dataset. https://doi.org/10.1371/journal.pcbi.1005874
             
             % Import the data
-            filename = '../../datasets/2/S1_Table.csv';
+            filename = ['..' filesep '..' filesep 'datasets' filesep '2' filesep 'S1_Table.csv'];
             delimiter = ',';
             startRow = 2;
 
@@ -93,7 +93,7 @@ else
             clearvars filename delimiter startRow formatSpec fileID dataArray ans;
             
             % Add filtering for sub-dataset
-            study_id = 'Zibara'; % {Roland, Zibara, Volk08, Tan, Volk11a, Volk11b}
+            study_id = 'Roland'; % {Roland, Zibara, Volk08, Tan, Volk11a, Volk11b}
             switch study_id
                 case 'Roland'
                     sensory_data.x = S1Table.RolandTimedays;
@@ -121,7 +121,7 @@ else
             % Tumor growth kinetics of human LM2-4LUC+ triple negative breast carcinoma cells [Data set].
             % Zenodo. http://doi.org/10.5281/zenodo.3574531
             
-            filename = '../../datasets/3/LM2-4LUC.csv';
+            filename = ['..' filesep '..' filesep 'datasets' filesep '3' filesep 'LM2-4LUC.csv'];
             delimiter = ',';
             startRow = 2;
             formatSpec = '%f%f%f%[^\n\r]';
@@ -151,7 +151,7 @@ else
             % PLoS Computational Biology. Zenodo. http://doi.org/10.5281/zenodo.3572401
             
             % Initialize variables.
-            filename = '../../datasets/4/LLC_sc_CCSB.csv';
+            filename = ['..' filesep '..' filesep 'datasets' filesep '4'  filesep 'LLC_sc_CCSB.csv'];
             delimiter = ',';
             startRow = 2;
             formatSpec = '%f%f%f%[^\n\r]';
@@ -182,13 +182,12 @@ else
             % The Royal Society. Dataset. https://doi.org/10.6084/m9.figshare.6931394.v1
             
             % Import the data
-            filename = '../../datasets/5/rsif20180243_si_003.csv';
+            filename = ['..' filesep '..' filesep 'datasets' filesep '5'  filesep 'rsif20180243_si_003.csv'];
             delimiter = ',';
             startRow = 2;
 
             formatSpec = '%f%f%f%[^\n\r]';
 
-            %% Open the text file.
             fileID = fopen(filename,'r');
 
             dataArray = textscan(fileID, formatSpec, 'Delimiter', delimiter, 'TextType', 'string', 'HeaderLines' ,startRow-1, 'ReturnOnError', false, 'EndOfLine', '\r\n');
@@ -210,7 +209,7 @@ else
             % Cancer Chemother Rep 54.3 (1970): 143-74.
             
             % Initialize variables.
-            filename = '../../datasets/6/plasmacytoma.csv';
+            filename = ['..'  filesep '..' filesep 'datasets' filesep '6'  filesep 'plasmacytoma.csv'];
             delimiter = ',';
             startRow = 2;
             formatSpec = '%f%f%f%f%[^\n\r]';
