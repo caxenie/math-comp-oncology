@@ -38,7 +38,7 @@ if DATASET == 0
     DATASET_LEN     = length(sensory_data.x);
 else
     % select the dataset of interest
-    experiment_dataset = 6; % {1, 2, 3, 4, 5, 6}
+    experiment_dataset = 5; % {1, 2, 3, 4, 5, 6}
     % read from sample datasets
     switch experiment_dataset
         case 1
@@ -77,32 +77,20 @@ else
             % PLOS Computational Biology. Dataset. https://doi.org/10.1371/journal.pcbi.1005874
             
             % Import the data
-            [~, ~, raw] = xlsread('../../datasets/2/S1_Table.xls','S1_Table','A2:L15');
-            raw(cellfun(@(x) ~isempty(x) && isnumeric(x) && isnan(x),raw)) = {''};
-            % Replace non-numeric cells with NaN
-            R = cellfun(@(x) ~isnumeric(x) && ~islogical(x),raw); % Find non-numeric cells
-            raw(R) = {NaN}; % Replace non-numeric cells
-            % Create output variable
-            data = reshape([raw{:}],size(raw));
-            % Create table
-            S1Table = table;
-            
-            % Allocate imported array to column variable names
-            S1Table.RolandTimedays = data(:,1);
-            S1Table.RolandVolumecm3 = data(:,2);
-            S1Table.ZibaraTimedays = data(:,3);
-            S1Table.ZibaraVolumecm3 = data(:,4);
-            S1Table.Volk2008Timedays = data(:,5);
-            S1Table.Volk2008Volumecm3 = data(:,6);
-            S1Table.TanTimedays = data(:,7);
-            S1Table.TanVolumecm3 = data(:,8);
-            S1Table.Volk2011aTimedays = data(:,9);
-            S1Table.Volk2011aVolumecm3 = data(:,10);
-            S1Table.Volk2011bTimedays = data(:,11);
-            S1Table.Volk2011bVolumecm3 = data(:,12);
-            
-            % Clear temporary variables
-            clearvars data raw R;
+            filename = '../../datasets/2/S1_Table.csv';
+            delimiter = ',';
+            startRow = 2;
+
+            formatSpec = '%f%f%f%f%f%f%f%f%f%f%f%f%[^\n\r]';
+
+            fileID = fopen(filename,'r');
+
+            dataArray = textscan(fileID, formatSpec, 'Delimiter', delimiter, 'TextType', 'string', 'EmptyValue', NaN, 'HeaderLines' ,startRow-1, 'ReturnOnError', false, 'EndOfLine', '\r\n');
+            fclose(fileID);
+
+            S1Table = table(dataArray{1:end-1}, 'VariableNames', {'RolandTimedays','RolandVolumecm3','ZibaraTimedays','ZibaraVolumecm3','Volk2008Timedays','Volk2008Volumecm3','TanTimedays','TanVolumecm3','Volk2011aTimedays','Volk2011aVolumecm3','Volk2011bTimedays','Volk2011bVolumecm3'});
+
+            clearvars filename delimiter startRow formatSpec fileID dataArray ans;
             
             % Add filtering for sub-dataset
             study_id = 'Zibara'; % {Roland, Zibara, Volk08, Tan, Volk11a, Volk11b}
@@ -194,24 +182,23 @@ else
             % The Royal Society. Dataset. https://doi.org/10.6084/m9.figshare.6931394.v1
             
             % Import the data
-            [~, ~, raw] = xlsread('../../datasets/5/rsif20180243_si_003.xls','Table S1','A2:C14');
-            
-            % Create output variable
-            data = reshape([raw{:}],size(raw));
-            
-            % Create table to import data
-            rsif20180243si003 = table;
-            % Allocate imported array to column variable names
-            rsif20180243si003.day = data(:,1);
-            rsif20180243si003.increase = data(:,2);
-            rsif20180243si003.relativetumorvolumetoday8 = data(:,3);
-            
-            % or import as numeric array
-            % rsif20180243si003 = reshape([raw{:}],size(raw));
-            
-            % Clear temporary variables
-            clearvars data raw;
-            
+            filename = '../../datasets/5/rsif20180243_si_003.csv';
+            delimiter = ',';
+            startRow = 2;
+
+            formatSpec = '%f%f%f%[^\n\r]';
+
+            %% Open the text file.
+            fileID = fopen(filename,'r');
+
+            dataArray = textscan(fileID, formatSpec, 'Delimiter', delimiter, 'TextType', 'string', 'HeaderLines' ,startRow-1, 'ReturnOnError', false, 'EndOfLine', '\r\n');
+
+            fclose(fileID);
+
+            rsif20180243si003 = table(dataArray{1:end-1}, 'VariableNames', {'day','increase','relativetumorvolumetoday8'});
+
+            clearvars filename delimiter startRow formatSpec fileID dataArray ans;
+
             % populate the data structure
             sensory_data.x = rsif20180243si003.day;
             sensory_data.y = rsif20180243si003.relativetumorvolumetoday8;
