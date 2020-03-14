@@ -38,7 +38,7 @@ if DATASET == 0
     DATASET_LEN     = length(sensory_data.x);
 else
     % select the dataset of interest
-    experiment_dataset = 6; % {1, 2, 3, 4, 5, 6}
+    experiment_dataset = 2; % {1, 2, 3, 4, 5, 6}
     % read from sample datasets
     switch experiment_dataset
         case 1
@@ -96,23 +96,23 @@ else
             study_id = 'Roland'; % {Roland, Zibara, Volk08, Tan, Volk11a, Volk11b}
             switch study_id
                 case 'Roland'
-                    sensory_data.x = S1Table.RolandTimedays;
-                    sensory_data.y = S1Table.RolandVolumecm3;
+                    sensory_data.x = S1Table.RolandTimedays(~isnan(S1Table.RolandTimedays));
+                    sensory_data.y = S1Table.RolandVolumecm3(~isnan(S1Table.RolandVolumecm3));
                 case 'Zibara'
-                    sensory_data.x = S1Table.ZibaraTimedays;
-                    sensory_data.y = S1Table.ZibaraVolumecm3;
+                    sensory_data.x = S1Table.ZibaraTimedays(~isnan(S1Table.ZibaraTimedays));
+                    sensory_data.y = S1Table.ZibaraVolumecm3(~isnan(S1Table.ZibaraVolumecm3));
                 case 'Volk08'
-                    sensory_data.x = S1Table.Volk2008Timedays;
-                    sensory_data.y = S1Table.Volk2008Volumecm3;
+                    sensory_data.x = S1Table.Volk2008Timedays(~isnan(S1Table.Volk2008Timedays));
+                    sensory_data.y = S1Table.Volk2008Volumecm3(~isnan(S1Table.Volk2008Volumecm3));
                 case 'Tan'
-                    sensory_data.x = S1Table.TanTimedays;
-                    sensory_data.y = S1Table.TanVolumecm3;
+                    sensory_data.x = S1Table.TanTimedays(~isnan(S1Table.TanTimedays));
+                    sensory_data.y = S1Table.TanVolumecm3(~isnan(S1Table.TanVolumecm3));
                 case 'Volk11a'
-                    sensory_data.x = S1Table.Volk2011aTimedays;
-                    sensory_data.y = S1Table.Volk2011aVolumecm3;
+                    sensory_data.x = S1Table.Volk2011aTimedays(~isnan(S1Table.Volk2011aTimedays));
+                    sensory_data.y = S1Table.Volk2011aVolumecm3(~isnan(S1Table.Volk2011aVolumecm3));
                 case 'Volk11b'
-                    sensory_data.x = S1Table.Volk2011bTimedays;
-                    sensory_data.y = S1Table.Volk2011bVolumecm3;
+                    sensory_data.x = S1Table.Volk2011bTimedays(~isnan(S1Table.Volk2011bTimedays));
+                    sensory_data.y = S1Table.Volk2011bVolumecm3(~isnan(S1Table.Volk2011bVolumecm3));
             end
             
         case 3
@@ -199,8 +199,8 @@ else
             clearvars filename delimiter startRow formatSpec fileID dataArray ans;
 
             % populate the data structure
-            sensory_data.x = rsif20180243si003.day;
-            sensory_data.y = rsif20180243si003.relativetumorvolumetoday8;
+            sensory_data.x = rsif20180243si003.day(~isnan(rsif20180243si003.day));
+            sensory_data.y = rsif20180243si003.relativetumorvolumetoday8(~isnan(rsif20180243si003.relativetumorvolumetoday8));
             
         case 6
             
@@ -230,8 +230,8 @@ else
             clearvars filename delimiter startRow formatSpec fileID dataArray ans;
             
             % populate the data structure
-            sensory_data.x = plasmacytoma.day;
-            sensory_data.y = plasmacytoma.mass;
+            sensory_data.x = plasmacytoma.day(~isnan(plasmacytoma.day));
+            sensory_data.y = plasmacytoma.mass(~isnan(plasmacytoma.mass));
             
     end
     % change range
