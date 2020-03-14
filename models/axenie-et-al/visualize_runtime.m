@@ -7,9 +7,9 @@ id_maxv = zeros(populations(1).lsize, 1);
 for idx = 1:populations(1).lsize
     [~, id_maxv(idx)] = max(populations(1).Wcross(idx, :));
 end
-HL = (populations(1).Wcross)'; HL(HL<0)=0;
+HL = (rot90(populations(1).Wcross)); HL(HL<0)=0;
 subplot(1, 2, 1);
-hndl1 = imagesc(HL, [0, 100]); box off; colorbar;
+hndl1 = imagesc(HL, [0, max(HL(:))]); box off; colorbar;
 xlabel('neuron index'); ylabel('neuron index'); 
 subplot(1, 2, 2);
 hndl2 = surf(1:length(HL), 1:length(HL), HL);

@@ -2,7 +2,7 @@
 function id_maxv = visualize_results(sensory_data, populations, learning_params)
 %% hidden function, learnt function and overlyed max value ot decode
 figure;
-set(gcf, 'color', 'white');
+set(gcf, 'color', 'w');
 % sensory data
 subplot(4, 1, [1 2]);
 plot(sensory_data.x, sensory_data.y, '-g'); xlabel('X'); ylabel('Y'); box off;
@@ -16,13 +16,14 @@ minVal = min(id_maxv);
 maxVal = max(id_maxv);
 id_maxv = (((id_maxv - minVal) * (1 - (-1))) / (maxVal - minVal)) + (-1);
 % adjust interpolation to match data size
-upsample_factor = 10;
+upsample_factor = length(sensory_data.x)/length(id_maxv);
 datax = id_maxv';
 idx_data = 1:length(datax);
 idx_upsampled_data = 1:1/upsample_factor:length(datax);
 datax_extrapolated = interp1(idx_data, datax, idx_upsampled_data, 'linear');
 % get the error and plot it as errorbar
-deviation = sensory_data.y - datax_extrapolated;
+sensory_data.x = sensory_data.x(1:length(datax_extrapolated));
+deviation = sensory_data.x - datax_extrapolated;
 hold on; 
 % plot(sensory_data.x, datax_extrapolated,'r.', 'LineWidth', 2);
 errorbar(sensory_data.x(1:20:end), datax_extrapolated(1:20:end), deviation(1:20:end));
@@ -31,7 +32,7 @@ legend('Encoded relation','Decoded learnt relation');
 % learned realtionship encoded in the Hebbian links
 subplot(4, 1, [3 4]);
 % for 3rd order or higher order add some overlay
-imagesc(rot90(populations(1).Wcross), [0, 1]); box off; colorbar;
+imagesc(rot90(populations(1).Wcross), [0, max(populations(1).Wcross(:))]); box off; colorbar;
 xlabel('neuron index'); ylabel('neuron index');
 %% learning parameters in different figures
 figure; set(gcf, 'color', 'w');

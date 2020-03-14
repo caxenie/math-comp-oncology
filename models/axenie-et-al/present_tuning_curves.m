@@ -49,12 +49,12 @@ xlabel('neuron index'); ylabel('width of tuning curves');
 
 
 % DISPLAY ONLY SOME NEURONS
-figure;
+figure; set(gcf, 'color', 'w');box off;
 hndl = subplot(1,1,1);
 v_pref = sort(pop.Winput);
 % for each neuron in the current population compute the receptive field
 % select some tuning curves to plot
-pref = [1, 6, 13, 40, 45, 85, 90, 99];
+pref = [1, 6, 10, length(pop.Wcross) - 3, length(pop.Wcross)-2];
 for idx = 1:length(pref)
     idx_pref = pref(idx);
     % extract the preferred values (weight vector) of each neuron
@@ -68,7 +68,7 @@ v_pref_idx = zeros(1, length(pref));
 for idx = 1:length(pref)
     v_pref_idx(idx) = v_pref(pref(idx)+1);
 end
-set(ax2, 'XTick', v_pref_idx); set(ax2, 'XTickLabel', v_pref_idx);
+set(ax2, 'XTick', sort(v_pref_idx)); set(ax2, 'XTickLabel', sort(v_pref_idx));
 set(ax2, 'XLim', [min(x), max(x)]);
 set(ax2, 'XTickLabelRotation', 90);
 xlabel(ax2, 'preferred value');

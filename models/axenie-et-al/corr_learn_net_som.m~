@@ -9,7 +9,7 @@ N_SOM      = 2;
 % number of neurons in each population
 N_NEURONS  = 50;
 % MAX_EPOCHS for SOM relaxation
-MAX_EPOCHS_IN_LRN = 100;
+MAX_EPOCHS_IN_LRN = 50;
 MAX_EPOCHS_XMOD_LRN = 100;
 % number of data samples
 N_SAMPLES = 500;
@@ -38,7 +38,7 @@ if DATASET == 0
     DATASET_LEN     = length(sensory_data.x);
 else
     % select the dataset of interest
-    experiment_dataset = 1; % {1, 2, 3, 4, 5, 6}
+    experiment_dataset = 2; % {1, 2, 3, 4, 5, 6}
     % read from sample datasets
     switch experiment_dataset
         case 1
@@ -93,7 +93,7 @@ else
             clearvars filename delimiter startRow formatSpec fileID dataArray ans;
             
             % Add filtering for sub-dataset
-            study_id = 'Roland'; % {Roland, Zibara, Volk08, Tan, Volk11a, Volk11b}
+            study_id = 'Zibara'; % {Roland, Zibara, Volk08, Tan, Volk11a, Volk11b}
             switch study_id
                 case 'Roland'
                     sensory_data.x = S1Table.RolandTimedays(~isnan(S1Table.RolandTimedays));
@@ -245,7 +245,7 @@ else
     maxVal = max(sensory_data.y);
     sensory_data.y = (((sensory_data.y - minVal) * (sensory_data.range - (-sensory_data.range))) / (maxVal - minVal)) + (-sensory_data.range);
     % load the data and extrapolate for more density in x axis
-    upsample_factor = 50;
+    upsample_factor = 45;
     datax = sensory_data.x';
     idx_data = 1:length(datax);
     idx_upsampled_data = 1:1/upsample_factor:length(datax);
@@ -280,7 +280,7 @@ alpha0 = 0.1;
 alphaf = 0.001;
 learning_params.alphat = parametrize_learning_law(alpha0, alphaf, learning_params.t0, learning_params.tf_learn_in, 'invtime');
 % cross-modal learning rule type
-cross_learning = 'oja';    % {hebb - Hebbian, covariance - Covariance, oja - Oja's Local PCA}
+cross_learning = 'covariance';    % {hebb - Hebbian, covariance - Covariance, oja - Oja's Local PCA}
 % mean activities for covariance learning
 avg_act=zeros(N_NEURONS, N_SOM);
 %% NETWORK SIMULATION LOOP
@@ -399,6 +399,6 @@ populations(2).Wcross = populations(2).Wcross ./ max(populations(2).Wcross(:));
 % visualize post-simulation weight matrices encoding learned relation
 lrn_fct = visualize_results(sensory_data, populations, learning_params);
 % save runtime data in a file for later analysis
-%runtime_data_file = sprintf('runtime_data_%d_soms_%d_neurons_%d_samples_data_dist_%s_%s_train_epochs_%d.mat',...
-%    N_SOM, N_NEURONS, N_SAMPLES,"", "", MAX_EPOCHS_XMOD_LRN);
-%save(runtime_data_file);
+runtime_data_file = sprintf('runtime_data_%d_soms_%d_neurons_%d_samples_data_dist_%s_%s_train_epochs_%d.mat',...
+    N_SOM, N_NEURONS, N_SAMPLES,"", "", MAX_EPOCHS_XMOD_LRN);
+save(runtime_data_file);
