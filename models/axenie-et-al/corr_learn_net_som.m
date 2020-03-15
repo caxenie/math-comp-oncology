@@ -38,7 +38,7 @@ if DATASET == 0
     DATASET_LEN     = length(sensory_data.x);
 else
     % select the dataset of interest
-    experiment_dataset = 1; % {1, 2, 3, 4, 5, 6}
+    experiment_dataset = 4; % {1, 2, 3, 4, 5, 6}
     % read from sample datasets
     switch experiment_dataset
         case 1
@@ -77,7 +77,7 @@ else
             % PLOS Computational Biology. Dataset. https://doi.org/10.1371/journal.pcbi.1005874
             
             % Import the data
-            filename = ['..' filesep '..' filesep 'datasets' filesep '2' filesep 'S1_Table.csv'];
+            filename = ['..' filesep '..' filesep 'datasets' filesep '2' filesep 'angio-genesis.csv'];
             delimiter = ',';
             startRow = 2;
 
@@ -182,7 +182,7 @@ else
             % The Royal Society. Dataset. https://doi.org/10.6084/m9.figshare.6931394.v1
             
             % Import the data
-            filename = ['..' filesep '..' filesep 'datasets' filesep '5'  filesep 'rsif20180243_si_003.csv'];
+            filename = ['..' filesep '..' filesep 'datasets' filesep '5'  filesep 'biomarkers-angiogenic.csv'];
             delimiter = ',';
             startRow = 2;
 
@@ -234,6 +234,8 @@ else
             sensory_data.y = plasmacytoma.mass(~isnan(plasmacytoma.mass));
             
     end
+    % save the original dataset
+    sensory_data_orig = sensory_data;
     % change range
     sensory_data.range  = 1.0;
     % convert x axis data to [-sensory_data.range, +sensory_data.range]
@@ -245,7 +247,7 @@ else
     maxVal = max(sensory_data.y);
     sensory_data.y = (((sensory_data.y - minVal) * (sensory_data.range - (-sensory_data.range))) / (maxVal - minVal)) + (-sensory_data.range);
     % load the data and extrapolate for more density in x axis
-    upsample_factor = 50;
+    upsample_factor = 10;
     datax = sensory_data.x';
     idx_data = 1:length(datax);
     idx_upsampled_data = 1:1/upsample_factor:length(datax);
@@ -398,6 +400,12 @@ populations(1).Wcross = populations(1).Wcross ./ max(populations(1).Wcross(:));
 populations(2).Wcross = populations(2).Wcross ./ max(populations(2).Wcross(:));
 % visualize post-simulation weight matrices encoding learned relation
 [sensory_data, neural_model] = visualize_results(sensory_data, populations, learning_params);
+% denromalize the neural model fit to match original input data range
+minVal = min(neural_model);
+maxVal = max(neural_model);
+neural_model = (((neural_model - minVal) * (max(sensory_data_orig.y) - min(sensory_data_orig.y))) / (maxVal - minVal)) + min(sensory_data_orig.y);
+% downsample to match input data
+neural_model = downsample(neural_model, upsample_factor-1);
 % save runtime data in a file for later analysis and evaluation against
 % other models - imported in evaluation script
 runtime_data_file = sprintf('Experiment_dataset_%s_ml_model_runtime.mat',...

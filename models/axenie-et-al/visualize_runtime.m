@@ -1,6 +1,6 @@
 % function to visualize network data at a given iteration in runtime
 function id_maxv = visualize_runtime(populations, t)
-suptitle(sprintf('Hebbian connection matrix @ epoch %d', t));
+%suptitle(sprintf('Hebbian connection matrix @ epoch %d', t));
 set(gcf, 'color', 'white');
 % extract the max weight on each row (if multiple the first one)
 id_maxv = zeros(populations(1).lsize, 1);

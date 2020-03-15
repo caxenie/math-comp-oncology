@@ -3,41 +3,42 @@ function [t, y] = tumor_growth_model_fit(t1, t2, m)
 % This program attempts to find values for r and K in logistic
 % model that best fit a given set of data by using fminsearch
 close all;
-global T M r K model miu
+global T M r K model miu min0
 % data points from experiment or ...
 % Assume the mass of a tumor has a weight of 0.5 grams
 % on day 1, 1 gram on day 2, 3 grams on day 3,
 % 4 grams on day 4, and 4.5 grams on day 5.
-% T=[1,2,3,4,5]';
-% M=[0.5,1,3,4,4.5]';
+%T=[1,2,3,4,5]';
+%M=[0.5,1,3,4,4.5]';
 T = t1;
 M = t2;
 model =  m;
-x0=[0.8; length(T)];
-[min, ~]=fminsearch(@er,x0,optimset('TolX',1e-6,'MaxIter',200));
-r = min(1);
-K = min(2);
+min0 = 0.9;
+x0=[min0; length(T)];
+% eventually 'MaxFunEvals',1000, 
+[minv, ~]=fminsearch(@er,x0,optimset('TolX',1e-6,'MaxIter',500));
+r = minv(1);
+K = minv(2);
 miu = 2.7;
-k = 0.05;
 % choose model
 %% @logistic, @vonbertalanffy, @gompertz, @bernoulli, @holling
 switch model
     case 'logistic'
-        [t,y]=ode23s(@logistic,[1 length(T)],0.5);
+        [t,y]=ode23s(@logistic,[1 length(T)], min0);
     case 'vonBertalanffy'
-        [t,y]=ode23s(@vonbertalanffy,[1 length(T)],0.5);
+        [t,y]=ode23s(@vonbertalanffy,[1 length(T)], min0);
     case 'Gompertz'
-        [t,y]=ode23s(@gompertz,[1 length(T)],0.5);
+        [t,y]=ode23s(@gompertz,[1 length(T)], min0);
     case 'Bernoulli'
-        [t,y]=ode23s(@bernoulli,[1 length(T)],0.5);
+        [t,y]=ode23s(@bernoulli,[1 length(T)], min0);
     case 'Holling'
-        [t,y]=ode23s(@holling,[1 length(T)],0.5);
+        [t,y]=ode23s(@holling,[1 length(T)], min0);
 end
 end
 
 %function for ode solver
 function z=er(x)
-global T M r K model miu k
+global T M r K model miu k min0
 tt=0:1:length(T);
 % data points from experiment
 %T=[1,2,3,4,5]';
@@ -46,7 +47,7 @@ r=x(1);
 K=x(2);
 miu = 2.7;
 k = 0.05;
-y0 = 0.1;
+y0 = min0;
 switch model
     case 'logistic'
         [~, y1] = ode23s(@logistic, tt, y0);
