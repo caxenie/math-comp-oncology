@@ -8,14 +8,14 @@ global T M r K model miu
 % Assume the mass of a tumor has a weight of 0.5 grams
 % on day 1, 1 gram on day 2, 3 grams on day 3,
 % 4 grams on day 4, and 4.5 grams on day 5.
-% T=[1,2,3,4,5]'; 
+% T=[1,2,3,4,5]';
 % M=[0.5,1,3,4,4.5]';
 T = t1;
 M = t2;
-model =  m; 
-x0=[0.8; 5];
+model =  m;
+x0=[0.8; length(T)];
 [min, ~]=fminsearch(@er,x0,optimset('TolX',1e-6,'MaxIter',200));
-r = min(1); 
+r = min(1);
 K = min(2);
 miu = 2.7;
 k = 0.05;
@@ -23,36 +23,30 @@ k = 0.05;
 %% @logistic, @vonbertalanffy, @gompertz, @bernoulli, @holling
 switch model
     case 'logistic'
-        [t,y]=ode23s(@logistic,[1 5],0.5); 
+        [t,y]=ode23s(@logistic,[1 length(T)],0.5);
     case 'vonBertalanffy'
-        [t,y]=ode23s(@vonbertalanffy,[1 5],0.5);
+        [t,y]=ode23s(@vonbertalanffy,[1 length(T)],0.5);
     case 'Gompertz'
-        [t,y]=ode23s(@gompertz,[1 5],0.5);
+        [t,y]=ode23s(@gompertz,[1 length(T)],0.5);
     case 'Bernoulli'
-        [t,y]=ode23s(@bernoulli,[1 5],0.5);
+        [t,y]=ode23s(@bernoulli,[1 length(T)],0.5);
     case 'Holling'
-        [t,y]=ode23s(@holling,[1 5],0.5);
+        [t,y]=ode23s(@holling,[1 length(T)],0.5);
 end
-plot(t,y,T,M,'r*');
-set(gcf, 'color', 'w');
-title(sprintf('%s growth model', model));
-legend('fit model', 'data points (mass/day)');
-box off;
-
 end
 
 %function for ode solver
 function z=er(x)
 global T M r K model miu k
-tt=0:1:60;
+tt=0:1:length(T);
 % data points from experiment
-T=[1,2,3,4,5]'; 
-M=[0.5,1,3,4,4.5]';
-r=x(1); 
+%T=[1,2,3,4,5]';
+%M=[0.5,1,3,4,4.5]';
+r=x(1);
 K=x(2);
 miu = 2.7;
 k = 0.05;
-y0 = 0.1; 
+y0 = 0.1;
 switch model
     case 'logistic'
         [~, y1] = ode23s(@logistic, tt, y0);
@@ -71,34 +65,34 @@ end
 % logistic model
 function yp = logistic(~,y)
 global r K
-yp = y; 
+yp = y;
 yp(1) = r*y(1)*(1 - y(1)/K);
 end
 
 % von Bertalanffy model
 function yp = vonbertalanffy(~,y)
 global r K
-yp = y; 
+yp = y;
 yp(1) = r*y(1)*(1/(y(1)^(1/3)) - 1/K);
 end
 
 % Gompertz model
 function yp = gompertz(~,y)
 global r K
-yp = y; 
+yp = y;
 yp(1) = r*y(1)*(1/K - log(y(1)));
 end
 
 % Bernoulli model
 function yp = bernoulli(~,y)
 global r K miu
-yp = y; 
+yp = y;
 yp(1) = r*y(1)*(1 - (y(1)^(miu - 1))/K);
 end
 
 % Holling type 2 model
 function yp = holling(~,y)
 global r K k
-yp = y; 
+yp = y;
 yp(1) = r*y(1)*((K - (k + y(1)))/(K*(k+y(1))));
 end

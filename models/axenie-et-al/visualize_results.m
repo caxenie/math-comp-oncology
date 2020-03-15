@@ -1,5 +1,5 @@
 % function to visualize network data at a given iteration in runtime
-function id_maxv = visualize_results(sensory_data, populations, learning_params)
+function [sensory_data, datax_extrapolated] = visualize_results(sensory_data, populations, learning_params)
 %% hidden function, learnt function and overlyed max value ot decode
 figure;
 set(gcf, 'color', 'w');
@@ -22,8 +22,9 @@ idx_data = 1:length(datax);
 idx_upsampled_data = 1:1/upsample_factor:length(datax);
 datax_extrapolated = interp1(idx_data, datax, idx_upsampled_data, 'linear');
 % get the error and plot it as errorbar
+sensory_data.y = sensory_data.y(1:length(datax_extrapolated));
+deviation = sensory_data.y - datax_extrapolated;
 sensory_data.x = sensory_data.x(1:length(datax_extrapolated));
-deviation = sensory_data.x - datax_extrapolated;
 hold on; 
 % plot(sensory_data.x, datax_extrapolated,'r.', 'LineWidth', 2);
 errorbar(sensory_data.x(1:20:end), datax_extrapolated(1:20:end), deviation(1:20:end));

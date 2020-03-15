@@ -61,7 +61,7 @@ else
             % MDAMB231dTomato = [dataArray{1:end-1}];
             
             % Clear temporary variables
-            clearvars filename delimiter startRow formatSpec fileID dataArray ans;
+            clearvars delimiter startRow formatSpec fileID dataArray ans;
             % check which ID one needs
             ID = 0; % ID is one of {0, 1, 2,ch 3, 4, 5, 6, 7}
             sensory_data.x =  MDAMB231dTomato.Time(MDAMB231dTomato.ID == ID);
@@ -87,7 +87,7 @@ else
 
             S1Table = table(dataArray{1:end-1}, 'VariableNames', {'RolandTimedays','RolandVolumecm3','ZibaraTimedays','ZibaraVolumecm3','Volk2008Timedays','Volk2008Volumecm3','TanTimedays','TanVolumecm3','Volk2011aTimedays','Volk2011aVolumecm3','Volk2011bTimedays','Volk2011bVolumecm3'});
 
-            clearvars filename delimiter startRow formatSpec fileID dataArray ans;
+            clearvars delimiter startRow formatSpec fileID dataArray ans;
             
             % Add filtering for sub-dataset
             study_id = 'Roland'; % {Roland, Zibara, Volk08, Tan, Volk11a, Volk11b}
@@ -134,7 +134,7 @@ else
             % LM24LUC = [dataArray{1:end-1}];
             
             % Clear temporary variables
-            clearvars filename delimiter startRow formatSpec fileID dataArray ans;
+            clearvars delimiter startRow formatSpec fileID dataArray ans;
             
             % check which ID one needs
             ID = 60; % ID is one of {0, 1, 2, 3, 4, 5, ..., 65}
@@ -165,7 +165,7 @@ else
             %LLCscCCSB = [dataArray{1:end-1}];
             
             % Clear temporary variables
-            clearvars filename delimiter startRow formatSpec fileID dataArray ans;
+            clearvars delimiter startRow formatSpec fileID dataArray ans;
             
             % check which ID one needs
             ID = 2; % ID is one of {1, 2, 3, 4, 5, ..., 20}
@@ -193,7 +193,7 @@ else
 
             rsif20180243si003 = table(dataArray{1:end-1}, 'VariableNames', {'day','increase','relativetumorvolumetoday8'});
 
-            clearvars filename delimiter startRow formatSpec fileID dataArray ans;
+            clearvars delimiter startRow formatSpec fileID dataArray ans;
 
             % populate the data structure
             sensory_data.x = rsif20180243si003.day(~isnan(rsif20180243si003.day));
@@ -224,7 +224,7 @@ else
             % plasmacytoma = [dataArray{1:end-1}];
 
             % Clear temporary variables
-            clearvars filename delimiter startRow formatSpec fileID dataArray ans;
+            clearvars delimiter startRow formatSpec fileID dataArray ans;
             
             % populate the data structure
             sensory_data.x = plasmacytoma.day(~isnan(plasmacytoma.day));
@@ -359,3 +359,8 @@ for didx = 1:DATASET_LEN
 end % end of all samples in the training dataset
 % visualize post-simulation data
 visualize_runtime(sensory_data, populations, 1, t, DATASET_LEN);
+% save runtime data in a file for later analysis and evaluation against
+% other models - imported in evaluation script
+runtime_data_file = sprintf('Experiment_dataset_%s_other_ml_model_runtime.mat',...
+    filename);
+save(runtime_data_file);
