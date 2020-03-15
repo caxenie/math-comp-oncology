@@ -276,11 +276,11 @@ sigma0 = N_NEURONS/2;
 sigmaf = 1;
 learning_params.sigmat = parametrize_learning_law(sigma0, sigmaf, learning_params.t0, learning_params.tf_learn_in, 'invtime');
 % init learning rate
-alpha0 = 0.1;
+alpha0 = 0.01;
 alphaf = 0.001;
 learning_params.alphat = parametrize_learning_law(alpha0, alphaf, learning_params.t0, learning_params.tf_learn_in, 'invtime');
 % cross-modal learning rule type
-cross_learning = 'oja';    % {hebb - Hebbian, covariance - Covariance, oja - Oja's Local PCA}
+cross_learning = 'covariance';    % {hebb - Hebbian, covariance - Covariance, oja - Oja's Local PCA}
 % mean activities for covariance learning
 avg_act=zeros(N_NEURONS, N_SOM);
 %% NETWORK SIMULATION LOOP

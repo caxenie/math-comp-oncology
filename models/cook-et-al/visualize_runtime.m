@@ -30,7 +30,7 @@ if(d~=length(sensory_data.x) && tau~=1)
     hpc1 = subplot(3, 3, 7);
     ax1=get(hpc1,'position'); % Save the position as ax
     set(hpc1,'position',ax1); % Manually setting this holds the position with colorbar
-    acth9 = imagesc(populations(1).Wext); caxis([0, max(populations(1).Wext(:))]); colorbar;
+    acth9 = imagesc(rot90(populations(1).Wext)); caxis([0, max(populations(1).Wext(:))]); colorbar;
     box off; grid off;set(gca,'XAxisLocation','top');
     xlabel('layer 1 - neuron index'); ylabel('layer 2 - neuron index'); title('HL weights 1->2');
     hpc2 = subplot(3, 3, 8);

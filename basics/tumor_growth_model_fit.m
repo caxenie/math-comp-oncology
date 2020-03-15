@@ -1,20 +1,18 @@
+% Compare scalar models for tumor growth
+function [t, y] = tumor_growth_model_fit(t1, t2, m)
+% This program attempts to find values for r and K in logistic
+% model that best fit a given set of data by using fminsearch
+close all;
+global T M r K model miu
+% data points from experiment or ...
 % Assume the mass of a tumor has a weight of 0.5 grams
 % on day 1, 1 gram on day 2, 3 grams on day 3,
 % 4 grams on day 4, and 4.5 grams on day 5.
-
-% Find a set of parameters that
-% best  fits  the  data  to  the growth model of interest
-
-function tumor_growth_model_fit()
-
-% This program attempts to find values for r and K in logistic
-% model that best fit a given set of data by using fminsearch
-clear;
-close all;
-global T M r K model miu
-% choose model
-%% 'logistic', 'vonBertalanffy', 'Gompertz', 'Bernoulli', 'Holling'
-model =  'Holling'; 
+% T=[1,2,3,4,5]'; 
+% M=[0.5,1,3,4,4.5]';
+T = t1;
+M = t2;
+model =  m; 
 x0=[0.8; 5];
 [min, ~]=fminsearch(@er,x0,optimset('TolX',1e-6,'MaxIter',200));
 r = min(1); 
@@ -23,7 +21,18 @@ miu = 2.7;
 k = 0.05;
 % choose model
 %% @logistic, @vonbertalanffy, @gompertz, @bernoulli, @holling
-[t,y]=ode23s(@holling,[1 5],0.5); 
+switch model
+    case 'logistic'
+        [t,y]=ode23s(@logistic,[1 5],0.5); 
+    case 'vonBertalanffy'
+        [t,y]=ode23s(@vonbertalanffy,[1 5],0.5);
+    case 'Gompertz'
+        [t,y]=ode23s(@gompertz,[1 5],0.5);
+    case 'Bernoulli'
+        [t,y]=ode23s(@bernoulli,[1 5],0.5);
+    case 'Holling'
+        [t,y]=ode23s(@holling,[1 5],0.5);
+end
 plot(t,y,T,M,'r*');
 set(gcf, 'color', 'w');
 title(sprintf('%s growth model', model));
