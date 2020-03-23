@@ -27,7 +27,7 @@ deviation = sensory_data.y - datax_extrapolated;
 sensory_data.x = sensory_data.x(1:length(datax_extrapolated));
 hold on; 
 % plot(sensory_data.x, datax_extrapolated,'r.', 'LineWidth', 2);
-errorbar(sensory_data.x(1:20:end), datax_extrapolated(1:20:end), deviation(1:20:end));
+errorbar(sensory_data.x(1:end), datax_extrapolated(1:end), deviation(1:end));
 title('Output Analysis');
 legend('Encoded relation','Decoded learnt relation');
 % learned realtionship encoded in the Hebbian links

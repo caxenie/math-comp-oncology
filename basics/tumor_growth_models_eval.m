@@ -12,7 +12,7 @@ dataset = dir('../models/axenie-et-al/Experiment_dataset_*');
 copyfile([dataset.folder,'/',dataset.name], './')
 load(dataset.name);
 global T M
-T = 1:length(sensory_data_orig.x); T = T';
+T = 1:DATASET_LEN_ORIG; T = T';
 M = sensory_data_orig.y;
 
 % or ... assume the mass of a tumor has a weight of 0.5 grams
@@ -26,7 +26,6 @@ M = sensory_data_orig.y;
 [t1l, y1l] = tumor_growth_model_fit(T, M,'logistic');
 [t1v, y1v] = tumor_growth_model_fit(T, M,'vonBertalanffy');
 [t1h, y1h] = tumor_growth_model_fit(T, M,'Holling');
-[t1b, y1b] = tumor_growth_model_fit(T, M,'Bernoulli');
 % evaluate the neural model 
 t1neuro = T;
 y1neuro = neural_model(T)';
@@ -42,9 +41,8 @@ plot(t1g,y1g);
 plot(t1l,y1l);
 plot(t1v,y1v);
 plot(t1h,y1h);
-plot(t1b,y1b);
 title('Growth models analysis');
-legend('Data points', 'Neural Model', 'Gompertz','Logistic','vonBertalanffy','Holling','Bernoulli');
+legend('Data points', 'Neural Model', 'Gompertz','Logistic','vonBertalanffy','Holling');
 legend('boxoff');
 box off;
 % evaluate SSE, RMSE, MAPE
@@ -54,18 +52,15 @@ SSEg = norm(M-y1g(T),2)^2;
 SSEl = norm(M-y1l(T),2)^2;
 SSEv = norm(M-y1v(T),2)^2;
 SSEh = norm(M-y1h(T),2)^2;
-SSEb = norm(M-y1b(T),2)^2;
 % RMSE
 RMSEn = sqrt(mean((M-y1neuro).^2));
 RMSEg = sqrt(mean((M-y1g(T)).^2));
 RMSEl = sqrt(mean((M-y1l(T)).^2));
 RMSEv = sqrt(mean((M-y1v(T)).^2));
 RMSEh = sqrt(mean((M-y1h(T)).^2));
-RMSEb = sqrt(mean((M-y1b(T)).^2)); 
 % MAPE
 MAPEn = mean(abs((M-y1neuro)./M));
 MAPEg = mean(abs((M-y1g(T))./M));
 MAPEl = mean(abs((M-y1l(T))./M));
 MAPEv = mean(abs((M-y1v(T))./M));
 MAPEh = mean(abs((M-y1h(T))./M));
-MAPEb = mean(abs((M-y1b(T))./M));

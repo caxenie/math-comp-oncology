@@ -26,16 +26,16 @@ function sample_growth_kinetics()
    hold on;
    plot(t,N_t,'k');
    h = errorbar(time,mass,E,'ko');
-   ylabel('Tumor mass (mg)');
+   ylabel('Tumor volume (mm^3)');
    xlabel('Time (days)');
    ylim([0,2.5e4]);   
    subplot(1, 2, 2);
    set(gcf, 'color','w')
    box off;
-   semilogy(time,mass,'ko');
+   semilogy(time,mass,'k*');
    hold on;
    semilogy(t,N_t,'k');
    box off;
-   ylabel('log tumor mass');
+   ylabel('log tumor volume');
    xlabel('Time (days)');
 end

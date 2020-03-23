@@ -32,13 +32,21 @@ if DATASET == 0
     MAX_VAL         = 1.0;
     % setup the number of random input samples to generate
     NUM_VALS        = 250;
+    
     % generate NUM_VALS random samples in the given interval
     sensory_data.x  = MIN_VAL + rand(NUM_VALS, 1)*(MAX_VAL - MIN_VAL);
+    % dummy relation
     sensory_data.y  = sensory_data.x.^3;
+    
+    % test on prediction of surgical volume model learning
+    % Edgerton et al. 2011, A novel, patient-specific mathematical pathology approach for assessment of surgical volume: application to ductal carcinoma in situ of the breast
+    L = 0.5; % diffusion percent
+    R = 6; % cm
+    sensory_data.y  = 3*(L/R)*(R - tanh(R/L))/(R - tanh(R/L))*sensory_data.x;
     DATASET_LEN     = length(sensory_data.x);
 else
     % select the dataset of interest
-    experiment_dataset = 4; % {1, 2, 3, 4, 5, 6}
+    experiment_dataset = 1; % {1, 2, 3, 4, 5, 6}
     % read from sample datasets
     switch experiment_dataset
         case 1
@@ -88,7 +96,7 @@ else
             dataArray = textscan(fileID, formatSpec, 'Delimiter', delimiter, 'TextType', 'string', 'EmptyValue', NaN, 'HeaderLines' ,startRow-1, 'ReturnOnError', false, 'EndOfLine', '\r\n');
             fclose(fileID);
 
-            S1Table = table(dataArray{1:end-1}, 'VariableNames', {'RolandTimedays','RolandVolumecm3','ZibaraTimedays','ZibaraVolumecm3','Volk2008Timedays','Volk2008Volumecm3','TanTimedays','TanVolumecm3','Volk2011aTimedays','Volk2011aVolumecm3','Volk2011bTimedays','Volk2011bVolumecm3'});
+            S1Table = table(dataArray{1:end-1}, 'VariableNames', {'RolandTimedays','RolandVolumemm3','ZibaraTimedays','ZibaraVolumemm3','Volk2008Timedays','Volk2008Volumemm3','TanTimedays','TanVolumemm3','Volk2011aTimedays','Volk2011aVolumemm3','Volk2011bTimedays','Volk2011bVolumemm3'});
 
             clearvars delimiter startRow formatSpec fileID dataArray ans;
             
@@ -97,22 +105,22 @@ else
             switch study_id
                 case 'Roland'
                     sensory_data.x = S1Table.RolandTimedays(~isnan(S1Table.RolandTimedays));
-                    sensory_data.y = S1Table.RolandVolumecm3(~isnan(S1Table.RolandVolumecm3));
+                    sensory_data.y = S1Table.RolandVolumemm3(~isnan(S1Table.RolandVolumemm3));
                 case 'Zibara'
                     sensory_data.x = S1Table.ZibaraTimedays(~isnan(S1Table.ZibaraTimedays));
-                    sensory_data.y = S1Table.ZibaraVolumecm3(~isnan(S1Table.ZibaraVolumecm3));
+                    sensory_data.y = S1Table.ZibaraVolumemm3(~isnan(S1Table.ZibaraVolumemm3));
                 case 'Volk08'
                     sensory_data.x = S1Table.Volk2008Timedays(~isnan(S1Table.Volk2008Timedays));
-                    sensory_data.y = S1Table.Volk2008Volumecm3(~isnan(S1Table.Volk2008Volumecm3));
+                    sensory_data.y = S1Table.Volk2008Volumemm3(~isnan(S1Table.Volk2008Volumemm3));
                 case 'Tan'
                     sensory_data.x = S1Table.TanTimedays(~isnan(S1Table.TanTimedays));
-                    sensory_data.y = S1Table.TanVolumecm3(~isnan(S1Table.TanVolumecm3));
+                    sensory_data.y = S1Table.TanVolumemm3(~isnan(S1Table.TanVolumemm3));
                 case 'Volk11a'
                     sensory_data.x = S1Table.Volk2011aTimedays(~isnan(S1Table.Volk2011aTimedays));
-                    sensory_data.y = S1Table.Volk2011aVolumecm3(~isnan(S1Table.Volk2011aVolumecm3));
+                    sensory_data.y = S1Table.Volk2011aVolumemm3(~isnan(S1Table.Volk2011aVolumemm3));
                 case 'Volk11b'
                     sensory_data.x = S1Table.Volk2011bTimedays(~isnan(S1Table.Volk2011bTimedays));
-                    sensory_data.y = S1Table.Volk2011bVolumecm3(~isnan(S1Table.Volk2011bVolumecm3));
+                    sensory_data.y = S1Table.Volk2011bVolumemm3(~isnan(S1Table.Volk2011bVolumemm3));
             end
             
         case 3
@@ -236,6 +244,7 @@ else
     end
     % save the original dataset
     sensory_data_orig = sensory_data;
+    DATASET_LEN_ORIG = length(sensory_data_orig.x);
     % change range
     sensory_data.range  = 1.0;
     % convert x axis data to [-sensory_data.range, +sensory_data.range]
@@ -259,8 +268,10 @@ else
     datay_extrapolated = interp1(idx_data, datay, idx_upsampled_data, 'linear');
 end
 % re-assign data
-sensory_data.x = datax_extrapolated;
-sensory_data.y = datay_extrapolated;
+if DATASET == 1
+    sensory_data.x = datax_extrapolated;
+    sensory_data.y = datay_extrapolated;
+end
 DATASET_LEN     = length(sensory_data.x);
 %% CREATE NETWORK AND INITIALIZE PARAMS
 % create a network of SOMs given the simulation constants
@@ -291,7 +302,9 @@ fprintf('Started training sequence ...\n');
 for t = 1:learning_params.tf_learn_cross
     % update visualization of the Hebbian links
     if DYN_VISUAL==1
-        visualize_runtime(populations, t);
+        if DATASET == 1
+            visualize_runtime(populations, t);
+        end
     end    % learn the sensory space data distribution
     if(t<learning_params.tf_learn_in)
         for didx = 1:DATASET_LEN
@@ -404,8 +417,34 @@ populations(2).Wcross = populations(2).Wcross ./ max(populations(2).Wcross(:));
 minVal = min(neural_model);
 maxVal = max(neural_model);
 neural_model = (((neural_model - minVal) * (max(sensory_data_orig.y) - min(sensory_data_orig.y))) / (maxVal - minVal)) + min(sensory_data_orig.y);
-% downsample to match input data
-neural_model = downsample(neural_model, upsample_factor-1);
+% downsample to match input data size, on various datasets
+switch(experiment_dataset)
+    case 1
+        neural_model = interp1(1:length(neural_model), neural_model, linspace(1,length(neural_model),DATASET_LEN_ORIG));
+    case 2 
+        switch (study_id)
+            case 'Roland'
+                neural_model = downsample(neural_model, upsample_factor-1);
+            case 'Zibara'
+                neural_model = downsample(neural_model, upsample_factor-1);
+            case 'Volk08'
+                neural_model = downsample(neural_model, upsample_factor-1);
+            case 'Tan' 
+                neural_model = downsample(neural_model, upsample_factor-1);
+            case 'Volk11a'
+                neural_model = downsample(neural_model, upsample_factor-1);
+            case 'Volk11b'
+                neural_model = downsample(neural_model, upsample_factor-1);
+        end
+    case 3
+        neural_model = downsample(neural_model, upsample_factor-1);
+    case 4
+        neural_model = downsample(neural_model, upsample_factor-1);
+    case 5
+        neural_model = downsample(neural_model, upsample_factor-1);
+    case 6
+        neural_model = downsample(neural_model, upsample_factor-1);        
+end
 % save runtime data in a file for later analysis and evaluation against
 % other models - imported in evaluation script
 runtime_data_file = sprintf('Experiment_dataset_%s_ml_model_runtime.mat',...
