@@ -45,6 +45,7 @@ title('Growth models analysis');
 legend('Data points', 'Neural Model', 'Gompertz','Logistic','vonBertalanffy','Holling');
 legend('boxoff');
 box off;
+
 %% Evaluate SSE, RMSE, MAPE
 % resample
 y1g = interp1(1:length(y1g), y1g, linspace(1,length(y1g),length(M)))';
@@ -121,52 +122,4 @@ ylabel('R^2');
 set(gca,'xtick', models, 'xticklabel', names); box off;
 
 
-%% Evaluation metrics for the scalar growth models and GLUECK
-% error std dev calculation
-% above a given threshold y, the measurement error is sub-proportional and, 
-% below this threshold, the error made is the same as when measuring y.
-% as from [Benzekry et al., 2014c]
-function s = error_std(alfa, sigma, M, y)
-N = length(M);
-s = zeros(1, N);
-for id=1:N
-    if(M(id) > y(id))
-        s(id) = sigma * M(id)^alfa;
-    else
-        s(id) = sigma * y(id)^alfa;
-    end
-end
-end
 
-% Sum Squared Error, SSE
-function sse = model_sse(alfa, sigma, M, y)
-N = length(M);
-estd = error_std(alfa, sigma, M, y);
-sse = 0;
-for id=1:N
-    sse = sse + ((y(id) - M(id))/(estd(id) / sigma))^2;
-end
-end
-
-% Root Mean Squared Error, RMSE
-function sum_rmse = model_rmse(alfa, sigma, M, y)
-N = length(M);
-sum_sse = model_sse(alfa, sigma, M, y);
-sum_rmse = sqrt(sum_sse/N);
-end
-
-% Akaike Information Criterion, AIC
-% as from [Burnham and Anderson, 2003]
-function aic = model_aic(alfa, sigma, M, y)
-N = length(M);
-sum_sse = model_sse(alfa, sigma, M, y);
-aic = N * log(sum_sse / N);
-end
-
-% R2 score, informative of how good is the model fit compared to a 
-% completely agnostic one that would result from assuming just 
-% the mean of the data
-function r2 = model_r2(M, y)
-y_avg = mean(y);
-r2 = 1 - (sum(y - M))/(sum(y - y_avg));
-end
