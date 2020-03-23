@@ -74,7 +74,7 @@ else
             % Clear temporary variables
             clearvars delimiter startRow formatSpec fileID dataArray ans;
             % check which ID one needs
-            ID = 0; % ID is one of {0, 1, 2,ch 3, 4, 5, 6, 7}
+            ID = 0; % ID is one of {0, 1, 2, 3, 4, 5, 6, 7}
             sensory_data.x =  MDAMB231dTomato.Time(MDAMB231dTomato.ID == ID);
             sensory_data.y =  MDAMB231dTomato.Observation(MDAMB231dTomato.ID == ID);
             
@@ -421,6 +421,7 @@ neural_model = (((neural_model - minVal) * (max(sensory_data_orig.y) - min(senso
 switch(experiment_dataset)
     case 1
         neural_model = interp1(1:length(neural_model), neural_model, linspace(1,length(neural_model),DATASET_LEN_ORIG));
+    % TODO for all other datasets
     case 2 
         switch (study_id)
             case 'Roland'
