@@ -30,6 +30,7 @@ if DATASET == 0
     % set up the interval of interest
     MIN_VAL         = -1.0;
     MAX_VAL         = 1.0;
+    sensory_data.range  = MAX_VAL;
     % setup the number of random input samples to generate
     NUM_VALS        = 250;
     
@@ -39,11 +40,11 @@ if DATASET == 0
     sensory_data.y  = sensory_data.x.^3;
     
     % test on prediction of surgical volume model learning
-    % Edgerton et al. 2011, A novel, patient-specific mathematical pathology approach for assessment of surgical volume: application to ductal carcinoma in situ of the breast
-    L = 0.5; % diffusion percent
-    R = 6; % cm
-    sensory_data.y  = 3*(L/R)*(R - tanh(R/L))/(R - tanh(R/L))*sensory_data.x;
-    DATASET_LEN     = length(sensory_data.x);
+    % Edgerton et al. 2011, A novel, patient-specific mathematical
+    % pathology approach for assessment of surgical volume:
+    % application to ductal carcinoma in situ of the breast
+    %sensory_data.y  = tanh(sensory_data.x);
+    %DATASET_LEN     = length(sensory_data.x);
 else
     % select the dataset of interest
     experiment_dataset = 1; % {1, 2, 3, 4, 5, 6}
@@ -88,16 +89,16 @@ else
             filename = ['..' filesep '..' filesep 'datasets' filesep '2' filesep 'angio-genesis.csv'];
             delimiter = ',';
             startRow = 2;
-
+            
             formatSpec = '%f%f%f%f%f%f%f%f%f%f%f%f%[^\n\r]';
-
+            
             fileID = fopen(filename,'r');
-
+            
             dataArray = textscan(fileID, formatSpec, 'Delimiter', delimiter, 'TextType', 'string', 'EmptyValue', NaN, 'HeaderLines' ,startRow-1, 'ReturnOnError', false, 'EndOfLine', '\r\n');
             fclose(fileID);
-
+            
             S1Table = table(dataArray{1:end-1}, 'VariableNames', {'RolandTimedays','RolandVolumemm3','ZibaraTimedays','ZibaraVolumemm3','Volk2008Timedays','Volk2008Volumemm3','TanTimedays','TanVolumemm3','Volk2011aTimedays','Volk2011aVolumemm3','Volk2011bTimedays','Volk2011bVolumemm3'});
-
+            
             clearvars delimiter startRow formatSpec fileID dataArray ans;
             
             % Add filtering for sub-dataset
@@ -193,19 +194,19 @@ else
             filename = ['..' filesep '..' filesep 'datasets' filesep '5'  filesep 'biomarkers-angiogenic.csv'];
             delimiter = ',';
             startRow = 2;
-
+            
             formatSpec = '%f%f%f%[^\n\r]';
-
+            
             fileID = fopen(filename,'r');
-
+            
             dataArray = textscan(fileID, formatSpec, 'Delimiter', delimiter, 'TextType', 'string', 'HeaderLines' ,startRow-1, 'ReturnOnError', false, 'EndOfLine', '\r\n');
-
+            
             fclose(fileID);
-
+            
             rsif20180243si003 = table(dataArray{1:end-1}, 'VariableNames', {'day','increase','relativetumorvolumetoday8'});
-
+            
             clearvars delimiter startRow formatSpec fileID dataArray ans;
-
+            
             % populate the data structure
             sensory_data.x = rsif20180243si003.day(~isnan(rsif20180243si003.day));
             sensory_data.y = rsif20180243si003.relativetumorvolumetoday8(~isnan(rsif20180243si003.relativetumorvolumetoday8));
@@ -228,12 +229,12 @@ else
             
             % Close the text file.
             fclose(fileID);
-
+            
             % Create output variable as table import
             plasmacytoma = table(dataArray{1:end-1}, 'VariableNames', {'size','std','mass','day'});
-            % or as a numeric array 
+            % or as a numeric array
             % plasmacytoma = [dataArray{1:end-1}];
-
+            
             % Clear temporary variables
             clearvars delimiter startRow formatSpec fileID dataArray ans;
             
@@ -412,42 +413,44 @@ present_tuning_curves(populations(2), sensory_data);
 populations(1).Wcross = populations(1).Wcross ./ max(populations(1).Wcross(:));
 populations(2).Wcross = populations(2).Wcross ./ max(populations(2).Wcross(:));
 % visualize post-simulation weight matrices encoding learned relation
-[sensory_data, neural_model] = visualize_results(sensory_data, populations, learning_params);
+[sensory_data, neural_model] = visualize_results(sensory_data, populations, learning_params, DATASET);
 % denromalize the neural model fit to match original input data range
-minVal = min(neural_model);
-maxVal = max(neural_model);
-neural_model = (((neural_model - minVal) * (max(sensory_data_orig.y) - min(sensory_data_orig.y))) / (maxVal - minVal)) + min(sensory_data_orig.y);
-% downsample to match input data size, on various datasets
-switch(experiment_dataset)
-    case 1
-        neural_model = interp1(1:length(neural_model), neural_model, linspace(1,length(neural_model),DATASET_LEN_ORIG));
-    % TODO for all other datasets
-    case 2 
-        switch (study_id)
-            case 'Roland'
-                neural_model = downsample(neural_model, upsample_factor-1);
-            case 'Zibara'
-                neural_model = downsample(neural_model, upsample_factor-1);
-            case 'Volk08'
-                neural_model = downsample(neural_model, upsample_factor-1);
-            case 'Tan' 
-                neural_model = downsample(neural_model, upsample_factor-1);
-            case 'Volk11a'
-                neural_model = downsample(neural_model, upsample_factor-1);
-            case 'Volk11b'
-                neural_model = downsample(neural_model, upsample_factor-1);
-        end
-    case 3
-        neural_model = downsample(neural_model, upsample_factor-1);
-    case 4
-        neural_model = downsample(neural_model, upsample_factor-1);
-    case 5
-        neural_model = downsample(neural_model, upsample_factor-1);
-    case 6
-        neural_model = downsample(neural_model, upsample_factor-1);        
-end
+if DATASET == 1 % for real-data experiments
+    minVal = min(neural_model);
+    maxVal = max(neural_model);
+    neural_model = (((neural_model - minVal) * (max(sensory_data_orig.y) - min(sensory_data_orig.y))) / (maxVal - minVal)) + min(sensory_data_orig.y);
+    % downsample to match input data size, on various datasets
+    switch(experiment_dataset)
+        case 1
+            neural_model = interp1(1:length(neural_model), neural_model, linspace(1,length(neural_model),DATASET_LEN_ORIG));
+            % TODO for all other datasets
+        case 2
+            switch (study_id)
+                case 'Roland'
+                    neural_model = downsample(neural_model, upsample_factor-1);
+                case 'Zibara'
+                    neural_model = downsample(neural_model, upsample_factor-1);
+                case 'Volk08'
+                    neural_model = downsample(neural_model, upsample_factor-1);
+                case 'Tan'
+                    neural_model = downsample(neural_model, upsample_factor-1);
+                case 'Volk11a'
+                    neural_model = downsample(neural_model, upsample_factor-1);
+                case 'Volk11b'
+                    neural_model = downsample(neural_model, upsample_factor-1);
+            end
+        case 3
+            neural_model = downsample(neural_model, upsample_factor-1);
+        case 4
+            neural_model = downsample(neural_model, upsample_factor-1);
+        case 5
+            neural_model = downsample(neural_model, upsample_factor-1);
+        case 6
+            neural_model = downsample(neural_model, upsample_factor-1);
+    end
 % save runtime data in a file for later analysis and evaluation against
 % other models - imported in evaluation script
 runtime_data_file = sprintf('Experiment_dataset_%s_ml_model_runtime.mat',...
     filename(18:end)); % get only the name of the file remove path
 save(runtime_data_file);
+end

@@ -1,11 +1,11 @@
 % function to visualize network data at a given iteration in runtime
-function [sensory_data, datax_extrapolated] = visualize_results(sensory_data, populations, learning_params)
+function [sensory_data, datax_extrapolated] = visualize_results(sensory_data, populations, learning_params, d)
 %% hidden function, learnt function and overlyed max value ot decode
 figure;
 set(gcf, 'color', 'w');
 % sensory data
 subplot(4, 1, [1 2]);
-plot(sensory_data.x, sensory_data.y, '-g'); xlabel('X'); ylabel('Y'); box off;
+plot(sensory_data.x, sensory_data.y, '*g'); xlabel('X'); ylabel('Y'); box off;
 % extract the max weight on each row (if multiple the first one)
 id_maxv = zeros(populations(1).lsize, 1);
 for idx = 1:populations(1).lsize
@@ -27,9 +27,11 @@ deviation = sensory_data.y - datax_extrapolated;
 sensory_data.x = sensory_data.x(1:length(datax_extrapolated));
 hold on; 
 % plot(sensory_data.x, datax_extrapolated,'r.', 'LineWidth', 2);
+if d == 1 % check the dataset type (artificial data vs real world)
 errorbar(sensory_data.x(1:end), datax_extrapolated(1:end), deviation(1:end));
 title('Output Analysis');
 legend('Encoded relation','Decoded learnt relation');
+end
 % learned realtionship encoded in the Hebbian links
 subplot(4, 1, [3 4]);
 % for 3rd order or higher order add some overlay
