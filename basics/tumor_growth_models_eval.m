@@ -47,6 +47,7 @@ legend('boxoff');
 box off;
 
 %% Evaluate SSE, RMSE, MAPE
+
 % resample
 y1g = interp1(1:length(y1g), y1g, linspace(1,length(y1g),length(M)))';
 y1l = interp1(1:length(y1l), y1l, linspace(1,length(y1l),length(M)))';
@@ -54,12 +55,13 @@ y1v = interp1(1:length(y1v), y1v, linspace(1,length(y1v),length(M)))';
 y1h = interp1(1:length(y1h), y1h, linspace(1,length(y1h),length(M)))';
 
 % params as from [Benzekry et al., 2014c]
-alfa = 0.84;
-sigma = 0.2;
+alfa = 0.5;
+sigma = 0.5;
 
-% locals
+% locals, model sequence, names and param numbers from [Benzekry et al., 2014c]
 models = 1:5;
 names = {'GLUECK'; 'Gompertz'; 'Logistic'; 'Bertalanffy'; 'Holling'};
+param_num = [0, 2, 2, 3, 3]; % param number for each model 
 
 % SSE
 SSEn = model_sse(alfa, sigma, M, y1neuro);
@@ -74,11 +76,11 @@ ylabel('SSE');
 set(gca,'xtick', models, 'xticklabel', names);
 
 % RMSE
-RMSEn = model_rmse(alfa, sigma, M, y1neuro);
-RMSEg = model_rmse(alfa, sigma, M, y1g);
-RMSEl = model_rmse(alfa, sigma, M, y1l);
-RMSEv = model_rmse(alfa, sigma, M, y1v);
-RMSEh = model_rmse(alfa, sigma, M, y1h);
+RMSEn = model_rmse(alfa, sigma, param_num(1), M, y1neuro);
+RMSEg = model_rmse(alfa, sigma, param_num(2), M, y1g);
+RMSEl = model_rmse(alfa, sigma, param_num(3), M, y1l);
+RMSEv = model_rmse(alfa, sigma, param_num(4), M, y1v);
+RMSEh = model_rmse(alfa, sigma, param_num(5), M, y1h);
 %plot comparatively
 figure(); set(gcf, 'color', 'w'); 
 plot(models, [RMSEn, RMSEg, RMSEl, RMSEv, RMSEh],'k*');
@@ -98,28 +100,25 @@ ylabel('MAPE');
 set(gca,'xtick', models, 'xticklabel', names);
 
 % AIC
-AICn = model_aic(alfa, sigma, M, y1neuro);
-AICg = model_aic(alfa, sigma, M, y1g);
-AICl = model_aic(alfa, sigma, M, y1l);
-AICv = model_aic(alfa, sigma, M, y1v);
-AICh = model_aic(alfa, sigma, M, y1h);
+AICn = model_aic(alfa, sigma, param_num(1), M, y1neuro);
+AICg = model_aic(alfa, sigma, param_num(2), M, y1g);
+AICl = model_aic(alfa, sigma, param_num(3), M, y1l);
+AICv = model_aic(alfa, sigma, param_num(4), M, y1v);
+AICh = model_aic(alfa, sigma, param_num(5), M, y1h);
 %plot comparatively
 figure(); set(gcf, 'color', 'w'); 
 plot(models, [AICn, AICg, AICl, AICv, AICh],'k*');
 ylabel('AIC');
 set(gca,'xtick', models, 'xticklabel', names);box off;
 
-% R2
-R2n = model_r2(M, y1neuro);
-R2g = model_r2(M, y1g);
-R2l = model_r2(M, y1l);
-R2v = model_r2(M, y1v);
-R2h = model_r2(M, y1h);
+% BIC
+BICn = model_bic(alfa, sigma, param_num(1), M, y1neuro);
+BICg = model_bic(alfa, sigma, param_num(2), M, y1g);
+BICl = model_bic(alfa, sigma, param_num(3), M, y1l);
+BICv = model_bic(alfa, sigma, param_num(4), M, y1v);
+BICh = model_bic(alfa, sigma, param_num(5), M, y1h);
 %plot comparatively
 figure(); set(gcf, 'color', 'w'); 
-plot(models, [R2n, R2g, R2l, R2v, R2h],'k*');
-ylabel('R^2');
-set(gca,'xtick', models, 'xticklabel', names); box off;
-
-
-
+plot(models, [BICn, BICg, BICl, BICv, BICh],'k*');
+ylabel('BIC');
+set(gca,'xtick', models, 'xticklabel', names);box off;

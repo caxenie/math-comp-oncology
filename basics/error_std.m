@@ -6,7 +6,7 @@ function s = error_std(alfa, sigma, M, y)
 N = length(M);
 s = zeros(1, N);
 for id=1:N
-    if(M(id) > y(id))
+    if(M(id) >= y(id))
         s(id) = sigma * M(id)^alfa;
     else
         s(id) = sigma * y(id)^alfa;
