@@ -22,7 +22,7 @@ WRAP_ON = 0;
 sensory_data.x = [];
 sensory_data.y = [];
 %% SELECT DATA SOURCE (arbitrary function or dataset)
-DATASET = 1; % if dataset is 1 load dataset, otherwise demo sample function
+DATASET = 0; % if dataset is 1 load dataset, otherwise demo sample function
 if DATASET == 0
     %% INIT INPUT DATA - RELATION IS EMBEDDED IN THE INPUT DATA PAIRS
     % demo basic functionality in extracting arbitrary functions
@@ -43,8 +43,9 @@ if DATASET == 0
     % Edgerton et al. 2011, A novel, patient-specific mathematical
     % pathology approach for assessment of surgical volume:
     % application to ductal carcinoma in situ of the breast
-    %sensory_data.y  = tanh(sensory_data.x);
-    %DATASET_LEN     = length(sensory_data.x);
+    sensory_data.x = sort(sensory_data.x);
+    sensory_data.y  = 3*(sensory_data.x).*((1 - sensory_data.x.*tanh(1./sensory_data.x))./tanh(1./sensory_data.x));
+    DATASET_LEN     = length(sensory_data.x);
 else
     % select the dataset of interest
     experiment_dataset = 1; % {1, 2, 3, 4, 5, 6}
