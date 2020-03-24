@@ -42,8 +42,27 @@ if DATASET == 0
     % test on prediction of surgical volume model learning
     % Edgerton et al. 2011, A novel, patient-specific mathematical
     % pathology approach for assessment of surgical volume:
-    % application to ductal carcinoma in situ of the breast
-    sensory_data.x = sort(sensory_data.x);
+    % application to ductal carcinoma in situ (DCIS) of the breast
+    A = [2.00E-02, 4.11E-02, 3.01E-03, 1.15E-01, 2.17E-01, 2.63E-01, 4.66E-02, 2.75E-02, 5.79E-02,  3.92E-02,  1.06E-01,  3.90E-02, 3.83E-02,  5.31E-02, 4.90E-02, 2.85E-02, 9.08E-02];
+    L = [374, 196.84, 350.75, 301.63, 222.33, 237.50, 228.03, 160.99, 230.88, 198.16,  275.12, 176.73, 158.30, 457.05, 303.53, 278.18, 218.23];
+    D = [11.14, 2.83, 69.96, 1.51, 0.57, 0.49, 2.89, 3.48, 2.35, 3.00, 1.51, 2.69, 2.45, 5.07, 3.65, 5.80, 1.40];
+    R = D/2;
+    sensory_data.x = L./R;
+    % change range for NN
+    % convert x axis data to [-sensory_data.range, +sensory_data.range]
+    minVal = min(sensory_data.x);
+    maxVal = max(sensory_data.x);
+    sensory_data.x = (((sensory_data.x - minVal) * (sensory_data.range - (-sensory_data.range))) / (maxVal - minVal)) + (-sensory_data.range);
+    % convert y to [-range, range]
+    sensory_data.y = A;
+    minVal = min(sensory_data.y);
+    maxVal = max(sensory_data.y);
+    sensory_data.y = (((sensory_data.y - minVal) * (sensory_data.range - (-sensory_data.range))) / (maxVal - minVal)) + (-sensory_data.range);
+    % resample
+    sensory_data.x = interp1(1:length(sensory_data.x), sensory_data.x, linspace(1,length(sensory_data.x),NUM_VALS));  
+    sensory_data.y = interp1(1:length(sensory_data.y), sensory_data.y, linspace(1,length(sensory_data.y),NUM_VALS));  
+    % ground truth
+    % sensory_data.x = sort(sensory_data.x);
     sensory_data.y  = 3*(sensory_data.x).*((1 - sensory_data.x.*tanh(1./sensory_data.x))./tanh(1./sensory_data.x));
     DATASET_LEN     = length(sensory_data.x);
 else

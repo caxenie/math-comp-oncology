@@ -55,8 +55,8 @@ y1v = interp1(1:length(y1v), y1v, linspace(1,length(y1v),length(M)))';
 y1h = interp1(1:length(y1h), y1h, linspace(1,length(y1h),length(M)))';
 
 % params as from [Benzekry et al., 2014c]
-alfa = 0.5;
-sigma = 0.5;
+alfa = 0.84;
+sigma = 0.21;
 
 % locals, model sequence, names and param numbers from [Benzekry et al., 2014c]
 models = 1:5;
@@ -87,16 +87,16 @@ plot(models, [RMSEn, RMSEg, RMSEl, RMSEv, RMSEh],'k*');
 ylabel('RMSE');
 set(gca,'xtick', models, 'xticklabel', names);box off;
 
-% MAPE
-MAPEn = mean(abs((M-y1neuro)./M));
-MAPEg = mean(abs((M-y1g)./M));
-MAPEl = mean(abs((M-y1l)./M));
-MAPEv = mean(abs((M-y1v)./M));
-MAPEh = mean(abs((M-y1h)./M));
+% sMAPE
+sMAPEn = mean(2*abs((M-y1neuro))./(abs(M) + abs(y1neuro)));
+sMAPEg = mean(2*abs((M-y1g))./(abs(M) + abs(y1g)));
+sMAPEl = mean(2*abs((M-y1g))./(abs(M) + abs(y1g)));
+sMAPEv = mean(2*abs((M-y1g))./(abs(M) + abs(y1g)));
+sMAPEh = mean(2*abs((M-y1h))./(abs(M) + abs(y1h)));
 %plot comparatively
 figure(); set(gcf, 'color', 'w'); 
-plot(models, [MAPEn, MAPEg, MAPEl, MAPEv, MAPEh],'k*');box off;
-ylabel('MAPE');
+plot(models, [sMAPEn, sMAPEg, sMAPEl, sMAPEv, sMAPEh],'k*');box off;
+ylabel('sMAPE');
 set(gca,'xtick', models, 'xticklabel', names);
 
 % AIC
