@@ -27,15 +27,51 @@ if DATASET == 0
     % set up the interval of interest
     MIN_VAL         = -1.0;
     MAX_VAL         = 1.0;
+    sensory_data.range  = MAX_VAL;
     % setup the number of random input samples to generate
-    NUM_VALS        = 250;
+    NUM_VALS        = 500;
+    
     % generate NUM_VALS random samples in the given interval
     sensory_data.x  = MIN_VAL + rand(NUM_VALS, 1)*(MAX_VAL - MIN_VAL);
+    % dummy relation
     sensory_data.y  = sensory_data.x.^3;
-    DATASET_LEN     = length(sensory_data.x);
+    
+    % test on prediction of surgical volume model learning
+    % Edgerton et al. 2011, A novel, patient-specific mathematical
+    % pathology approach for assessment of surgical volume:
+    % application to ductal carcinoma in situ (DCIS) of the breast
+    A = [2.00E-02, 4.11E-02, 3.01E-03, 1.15E-01, 2.17E-01, 2.63E-01, ...
+        4.66E-02, 2.75E-02, 5.79E-02,  3.92E-02,  1.06E-01,  3.90E-02, ...
+        3.83E-02,  5.31E-02, 4.90E-02, 2.85E-02, 9.08E-02];
+    L = [374, 196.84, 350.75, 301.63, 222.33, 237.50, ...
+        228.03, 160.99, 230.88, 198.16,  275.12, 176.73, ...
+        158.30, 457.05, 303.53, 278.18, 218.23];
+    D = [11.14, 2.83, 69.96, 1.51, 0.57, 0.49, ...
+        2.89, 3.48, 2.35, 3.00, 1.51, 2.69, ...
+        2.45, 5.07, 3.65, 5.80, 1.40];
+    R = D/2;
+    sensory_data.x = L./R;
+    % change range for NN
+    % convert x axis data to [-sensory_data.range, +sensory_data.range]
+    minVal = min(sensory_data.x);
+    maxVal = max(sensory_data.x);
+    sensory_data.x = (((sensory_data.x - minVal) * (sensory_data.range - (-sensory_data.range))) / (maxVal - minVal)) + (-sensory_data.range);
+    % convert y to [-range, range]
+    sensory_data.y = A;
+    minVal = min(sensory_data.y);
+    maxVal = max(sensory_data.y);
+    sensory_data.y = (((sensory_data.y - minVal) * (sensory_data.range - (-sensory_data.range))) / (maxVal - minVal)) + (-sensory_data.range);
+    
+    % resample
+    sensory_data.x = interp1(1:length(sensory_data.x), sensory_data.x, linspace(1,length(sensory_data.x),NUM_VALS));
+    sensory_data.y = interp1(1:length(sensory_data.y), sensory_data.y, linspace(1,length(sensory_data.y),NUM_VALS));
+    
+    % ground truth (the actual equation in Edgerton et al. 2011)
+    %sensory_data.x = sort(sensory_data.x);
+    sensory_data.y  = 3*(sensory_data.x).*((1 - sensory_data.x.*tanh(1./sensory_data.x))./tanh(1./sensory_data.x));
 else
     % select the dataset of interest
-    experiment_dataset = 1; % {1, 2, 3, 4, 5, 6}
+    experiment_dataset = 6; % {1, 2, 3, 4, 5, 6}
     % read from sample datasets
     switch experiment_dataset
         case 1
@@ -63,7 +99,7 @@ else
             % Clear temporary variables
             clearvars delimiter startRow formatSpec fileID dataArray ans;
             % check which ID one needs
-            ID = 0; % ID is one of {0, 1, 2,ch 3, 4, 5, 6, 7}
+            ID = 0; % ID is one of {0, 1, 2, 3, 4, 5, 6, 7}
             sensory_data.x =  MDAMB231dTomato.Time(MDAMB231dTomato.ID == ID);
             sensory_data.y =  MDAMB231dTomato.Observation(MDAMB231dTomato.ID == ID);
             
@@ -74,44 +110,46 @@ else
             % PLOS Computational Biology. Dataset. https://doi.org/10.1371/journal.pcbi.1005874
             
             % Import the data
-            filename = ['..' filesep '..' filesep 'datasets' filesep '2' filesep 'S1_Table.csv'];
+            filename = ['..' filesep '..' filesep 'datasets' filesep '2' filesep 'angio-genesis.csv'];
             delimiter = ',';
             startRow = 2;
-
+            
             formatSpec = '%f%f%f%f%f%f%f%f%f%f%f%f%[^\n\r]';
-
+            
             fileID = fopen(filename,'r');
-
+            
             dataArray = textscan(fileID, formatSpec, 'Delimiter', delimiter, 'TextType', 'string', 'EmptyValue', NaN, 'HeaderLines' ,startRow-1, 'ReturnOnError', false, 'EndOfLine', '\r\n');
             fclose(fileID);
-
-            S1Table = table(dataArray{1:end-1}, 'VariableNames', {'RolandTimedays','RolandVolumecm3','ZibaraTimedays','ZibaraVolumecm3','Volk2008Timedays','Volk2008Volumecm3','TanTimedays','TanVolumecm3','Volk2011aTimedays','Volk2011aVolumecm3','Volk2011bTimedays','Volk2011bVolumecm3'});
-
+            
+            S1Table = table(dataArray{1:end-1}, 'VariableNames', {'RolandTimedays','RolandVolumemm3','ZibaraTimedays','ZibaraVolumemm3','Volk2008Timedays','Volk2008Volumemm3','TanTimedays','TanVolumemm3','Volk2011aTimedays','Volk2011aVolumemm3','Volk2011bTimedays','Volk2011bVolumemm3'});
+            
             clearvars delimiter startRow formatSpec fileID dataArray ans;
             
             % Add filtering for sub-dataset
-            study_id = 'Roland'; % {Roland, Zibara, Volk08, Tan, Volk11a, Volk11b}
+            study_id = 'Zibara'; % {Roland, Zibara, Volk08, Tan, Volk11a, Volk11b}
             switch study_id
                 case 'Roland'
                     sensory_data.x = S1Table.RolandTimedays(~isnan(S1Table.RolandTimedays));
-                    sensory_data.y = S1Table.RolandVolumecm3(~isnan(S1Table.RolandVolumecm3));
+                    sensory_data.y = S1Table.RolandVolumemm3(~isnan(S1Table.RolandVolumemm3));
                 case 'Zibara'
                     sensory_data.x = S1Table.ZibaraTimedays(~isnan(S1Table.ZibaraTimedays));
-                    sensory_data.y = S1Table.ZibaraVolumecm3(~isnan(S1Table.ZibaraVolumecm3));
+                    sensory_data.y = S1Table.ZibaraVolumemm3(~isnan(S1Table.ZibaraVolumemm3));
                 case 'Volk08'
                     sensory_data.x = S1Table.Volk2008Timedays(~isnan(S1Table.Volk2008Timedays));
-                    sensory_data.y = S1Table.Volk2008Volumecm3(~isnan(S1Table.Volk2008Volumecm3));
+                    sensory_data.y = S1Table.Volk2008Volumemm3(~isnan(S1Table.Volk2008Volumemm3));
                 case 'Tan'
                     sensory_data.x = S1Table.TanTimedays(~isnan(S1Table.TanTimedays));
-                    sensory_data.y = S1Table.TanVolumecm3(~isnan(S1Table.TanVolumecm3));
+                    sensory_data.y = S1Table.TanVolumemm3(~isnan(S1Table.TanVolumemm3));
                 case 'Volk11a'
                     sensory_data.x = S1Table.Volk2011aTimedays(~isnan(S1Table.Volk2011aTimedays));
-                    sensory_data.y = S1Table.Volk2011aVolumecm3(~isnan(S1Table.Volk2011aVolumecm3));
+                    sensory_data.y = S1Table.Volk2011aVolumemm3(~isnan(S1Table.Volk2011aVolumemm3));
                 case 'Volk11b'
                     sensory_data.x = S1Table.Volk2011bTimedays(~isnan(S1Table.Volk2011bTimedays));
-                    sensory_data.y = S1Table.Volk2011bVolumecm3(~isnan(S1Table.Volk2011bVolumecm3));
+                    sensory_data.y = S1Table.Volk2011bVolumemm3(~isnan(S1Table.Volk2011bVolumemm3));
             end
-            
+            % udpate the filename to contain also sub-dataset and study id
+            filename = ['..' filesep '..' filesep 'datasets' filesep '2' filesep 'angio-genesis.csv' study_id];
+
         case 3
             
             % Mastri, Michalis, Tracz, Amanda, & Ebos, John ML. (2019).
@@ -179,22 +217,22 @@ else
             % The Royal Society. Dataset. https://doi.org/10.6084/m9.figshare.6931394.v1
             
             % Import the data
-            filename = ['..' filesep '..' filesep 'datasets' filesep '5'  filesep 'rsif20180243_si_003.csv'];
+            filename = ['..' filesep '..' filesep 'datasets' filesep '5'  filesep 'biomarkers-angiogenic.csv'];
             delimiter = ',';
             startRow = 2;
-
+            
             formatSpec = '%f%f%f%[^\n\r]';
-
+            
             fileID = fopen(filename,'r');
-
+            
             dataArray = textscan(fileID, formatSpec, 'Delimiter', delimiter, 'TextType', 'string', 'HeaderLines' ,startRow-1, 'ReturnOnError', false, 'EndOfLine', '\r\n');
-
+            
             fclose(fileID);
-
+            
             rsif20180243si003 = table(dataArray{1:end-1}, 'VariableNames', {'day','increase','relativetumorvolumetoday8'});
-
+            
             clearvars delimiter startRow formatSpec fileID dataArray ans;
-
+            
             % populate the data structure
             sensory_data.x = rsif20180243si003.day(~isnan(rsif20180243si003.day));
             sensory_data.y = rsif20180243si003.relativetumorvolumetoday8(~isnan(rsif20180243si003.relativetumorvolumetoday8));
@@ -217,12 +255,12 @@ else
             
             % Close the text file.
             fclose(fileID);
-
+            
             % Create output variable as table import
             plasmacytoma = table(dataArray{1:end-1}, 'VariableNames', {'size','std','mass','day'});
-            % or as a numeric array 
+            % or as a numeric array
             % plasmacytoma = [dataArray{1:end-1}];
-
+            
             % Clear temporary variables
             clearvars delimiter startRow formatSpec fileID dataArray ans;
             
@@ -231,6 +269,9 @@ else
             sensory_data.y = plasmacytoma.mass(~isnan(plasmacytoma.mass));
             
     end
+    % save the original dataset
+    sensory_data_orig = sensory_data;
+    DATASET_LEN_ORIG = length(sensory_data_orig.x);
     % change range
     sensory_data.range  = 1.0;
     % convert x axis data to [-sensory_data.range, +sensory_data.range]
@@ -242,7 +283,7 @@ else
     maxVal = max(sensory_data.y);
     sensory_data.y = (((sensory_data.y - minVal) * (sensory_data.range - (-sensory_data.range))) / (maxVal - minVal)) + (-sensory_data.range);
     % load the data and extrapolate for more density in x axis
-    upsample_factor = 50;
+    upsample_factor = 30;
     datax = sensory_data.x';
     idx_data = 1:length(datax);
     idx_upsampled_data = 1:1/upsample_factor:length(datax);
@@ -254,9 +295,12 @@ else
     datay_extrapolated = interp1(idx_data, datay, idx_upsampled_data, 'linear');
 end
 % re-assign data
-sensory_data.x = datax_extrapolated;
-sensory_data.y = datay_extrapolated;
-DATASET_LEN     = length(sensory_data.x);%% INIT NETWORK DYNAMICS
+if DATASET == 1
+    sensory_data.x = datax_extrapolated;
+    sensory_data.y = datay_extrapolated;
+end
+DATASET_LEN     = length(sensory_data.x);
+
 % epoch iterator in outer loop (HL, HAR)
 t       = 1;
 % network iterator in inner loop (WTA)
@@ -361,6 +405,10 @@ end % end of all samples in the training dataset
 visualize_runtime(sensory_data, populations, 1, t, DATASET_LEN);
 % save runtime data in a file for later analysis and evaluation against
 % other models - imported in evaluation script
-runtime_data_file = sprintf('Experiment_dataset_%s_other_ml_model_runtime.mat',...
-    filename);
-save(runtime_data_file);
+if DATASET == 1 % for real-data experiments
+% save runtime data in a file for later analysis and evaluation against
+    % other models - imported in evaluation script
+    runtime_data_file = sprintf('Experiment_dataset_%s_other_ml_model_runtime.mat',...
+        filename(18:end)); % get only the name of the file remove path
+    save(runtime_data_file);
+end
