@@ -26,7 +26,7 @@ sensory_data.y = sensory_data.y(1:length(datax_extrapolated));
 deviation = sensory_data.y - datax_extrapolated;
 sensory_data.x = sensory_data.x(1:length(datax_extrapolated));
 hold on; 
-% plot(sensory_data.x, datax_extrapolated,'r.', 'LineWidth', 2);
+%plot(sensory_data.x, datax_extrapolated,'r.', 'LineWidth', 2);
 if d == 1 % check the dataset type (artificial data vs real world)
 errorbar(sensory_data.x(1:end), datax_extrapolated(1:end), deviation(1:end));
 title('Output Analysis');

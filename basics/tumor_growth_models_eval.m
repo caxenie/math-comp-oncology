@@ -3,6 +3,7 @@
 clear;
 clc; close all; 
 % data points from experiment along our ML model
+% FIXME check folder or parametrize for experiment id
 dataset = dir('../models/axenie-et-al/Experiment_dataset_*');
 
 % or the other(s) ML models
@@ -21,11 +22,24 @@ M = sensory_data_orig.y;
 % T=[1,2,3,4,5]';
 % M=[0.5,1,3,4,4.5]';
 
-% evaluate classical models 
-[t1g, y1g] = tumor_growth_model_fit(T, M,'Gompertz');
-[t1l, y1l] = tumor_growth_model_fit(T, M,'logistic');
-[t1v, y1v] = tumor_growth_model_fit(T, M,'vonBertalanffy');
-[t1h, y1h] = tumor_growth_model_fit(T, M,'Holling');
+%%  ODE integration is sensitive to initial conditions
+% some experiments have a scale 3 order of magnitude larger as others
+% adjust the initial condition for these two experiments
+
+% Dataset 1: Rodallec, Anne et al, Tumor growth kinetics of human MDA-MB-231
+% Dataset 2: Gaddy et al, Mechanistic modeling quantifies the influence of
+% tumor growth kinetics, Volk11b sub-dataset
+if experiment_dataset == 1 || (experiment_dataset == 2 && strcmp(study_id, 'Volk11b'))
+    minv = 0.2;
+else
+    minv = 0.02;
+end
+
+%% evaluate classical models 
+[t1g, y1g] = tumor_growth_model_fit(T, M,'Gompertz', minv);
+[t1l, y1l] = tumor_growth_model_fit(T, M,'logistic', minv);
+[t1v, y1v] = tumor_growth_model_fit(T, M,'vonBertalanffy', minv);
+[t1h, y1h] = tumor_growth_model_fit(T, M,'Holling', minv);
 % evaluate the neural model 
 t1neuro = T;
 y1neuro = neural_model(T)';

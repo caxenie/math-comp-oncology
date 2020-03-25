@@ -1,5 +1,5 @@
 % Compare scalar models for tumor growth
-function [t, y] = tumor_growth_model_fit(t1, t2, m)
+function [t, y] = tumor_growth_model_fit(t1, t2, m, minv)
 % This program attempts to find values for r and K in logistic
 % model that best fit a given set of data by using fminsearch
 close all;
@@ -13,10 +13,10 @@ global T M r K model miu min0
 T = t1;
 M = t2;
 model =  m;
-min0 = 0.9;
+min0 = minv;
 x0=[min0; length(T)];
 % eventually 'MaxFunEvals',1000, 
-[minv, ~]=fminsearch(@er,x0,optimset('TolX',1e-6,'MaxIter',500));
+[minv, ~]=fminsearch(@er,x0,optimset('TolX',1e-4,'MaxIter',1000, 'MaxFunEvals',5000));
 r = minv(1);
 K = minv(2);
 miu = 2.7;

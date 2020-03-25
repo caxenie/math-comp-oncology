@@ -43,9 +43,15 @@ if DATASET == 0
     % Edgerton et al. 2011, A novel, patient-specific mathematical
     % pathology approach for assessment of surgical volume:
     % application to ductal carcinoma in situ (DCIS) of the breast
-    A = [2.00E-02, 4.11E-02, 3.01E-03, 1.15E-01, 2.17E-01, 2.63E-01, 4.66E-02, 2.75E-02, 5.79E-02,  3.92E-02,  1.06E-01,  3.90E-02, 3.83E-02,  5.31E-02, 4.90E-02, 2.85E-02, 9.08E-02];
-    L = [374, 196.84, 350.75, 301.63, 222.33, 237.50, 228.03, 160.99, 230.88, 198.16,  275.12, 176.73, 158.30, 457.05, 303.53, 278.18, 218.23];
-    D = [11.14, 2.83, 69.96, 1.51, 0.57, 0.49, 2.89, 3.48, 2.35, 3.00, 1.51, 2.69, 2.45, 5.07, 3.65, 5.80, 1.40];
+    A = [2.00E-02, 4.11E-02, 3.01E-03, 1.15E-01, 2.17E-01, 2.63E-01, ...
+        4.66E-02, 2.75E-02, 5.79E-02,  3.92E-02,  1.06E-01,  3.90E-02, ...
+        3.83E-02,  5.31E-02, 4.90E-02, 2.85E-02, 9.08E-02];
+    L = [374, 196.84, 350.75, 301.63, 222.33, 237.50, ...
+        228.03, 160.99, 230.88, 198.16,  275.12, 176.73, ...
+        158.30, 457.05, 303.53, 278.18, 218.23];
+    D = [11.14, 2.83, 69.96, 1.51, 0.57, 0.49, ...
+        2.89, 3.48, 2.35, 3.00, 1.51, 2.69, ...
+        2.45, 5.07, 3.65, 5.80, 1.40];
     R = D/2;
     sensory_data.x = L./R;
     % change range for NN
@@ -58,13 +64,14 @@ if DATASET == 0
     minVal = min(sensory_data.y);
     maxVal = max(sensory_data.y);
     sensory_data.y = (((sensory_data.y - minVal) * (sensory_data.range - (-sensory_data.range))) / (maxVal - minVal)) + (-sensory_data.range);
+    
     % resample
-    sensory_data.x = interp1(1:length(sensory_data.x), sensory_data.x, linspace(1,length(sensory_data.x),NUM_VALS));  
-    sensory_data.y = interp1(1:length(sensory_data.y), sensory_data.y, linspace(1,length(sensory_data.y),NUM_VALS));  
-    % ground truth
-    % sensory_data.x = sort(sensory_data.x);
+    sensory_data.x = interp1(1:length(sensory_data.x), sensory_data.x, linspace(1,length(sensory_data.x),NUM_VALS));
+    sensory_data.y = interp1(1:length(sensory_data.y), sensory_data.y, linspace(1,length(sensory_data.y),NUM_VALS));
+    
+    % ground truth (the actual equation in Edgerton et al. 2011)
+    %sensory_data.x = sort(sensory_data.x);
     sensory_data.y  = 3*(sensory_data.x).*((1 - sensory_data.x.*tanh(1./sensory_data.x))./tanh(1./sensory_data.x));
-    DATASET_LEN     = length(sensory_data.x);
 else
     % select the dataset of interest
     experiment_dataset = 1; % {1, 2, 3, 4, 5, 6}
@@ -122,7 +129,7 @@ else
             clearvars delimiter startRow formatSpec fileID dataArray ans;
             
             % Add filtering for sub-dataset
-            study_id = 'Roland'; % {Roland, Zibara, Volk08, Tan, Volk11a, Volk11b}
+            study_id = 'Zibara'; % {Roland, Zibara, Volk08, Tan, Volk11a, Volk11b}
             switch study_id
                 case 'Roland'
                     sensory_data.x = S1Table.RolandTimedays(~isnan(S1Table.RolandTimedays));
@@ -143,7 +150,9 @@ else
                     sensory_data.x = S1Table.Volk2011bTimedays(~isnan(S1Table.Volk2011bTimedays));
                     sensory_data.y = S1Table.Volk2011bVolumemm3(~isnan(S1Table.Volk2011bVolumemm3));
             end
-            
+            % udpate the filename to contain also sub-dataset and study id
+            filename = ['..' filesep '..' filesep 'datasets' filesep '2' filesep 'angio-genesis.csv' study_id];
+
         case 3
             
             % Mastri, Michalis, Tracz, Amanda, & Ebos, John ML. (2019).
@@ -440,37 +449,10 @@ if DATASET == 1 % for real-data experiments
     maxVal = max(neural_model);
     neural_model = (((neural_model - minVal) * (max(sensory_data_orig.y) - min(sensory_data_orig.y))) / (maxVal - minVal)) + min(sensory_data_orig.y);
     % downsample to match input data size, on various datasets
-    switch(experiment_dataset)
-        case 1
-            neural_model = interp1(1:length(neural_model), neural_model, linspace(1,length(neural_model),DATASET_LEN_ORIG));
-            % TODO for all other datasets
-        case 2
-            switch (study_id)
-                case 'Roland'
-                    neural_model = downsample(neural_model, upsample_factor-1);
-                case 'Zibara'
-                    neural_model = downsample(neural_model, upsample_factor-1);
-                case 'Volk08'
-                    neural_model = downsample(neural_model, upsample_factor-1);
-                case 'Tan'
-                    neural_model = downsample(neural_model, upsample_factor-1);
-                case 'Volk11a'
-                    neural_model = downsample(neural_model, upsample_factor-1);
-                case 'Volk11b'
-                    neural_model = downsample(neural_model, upsample_factor-1);
-            end
-        case 3
-            neural_model = downsample(neural_model, upsample_factor-1);
-        case 4
-            neural_model = downsample(neural_model, upsample_factor-1);
-        case 5
-            neural_model = downsample(neural_model, upsample_factor-1);
-        case 6
-            neural_model = downsample(neural_model, upsample_factor-1);
-    end
-% save runtime data in a file for later analysis and evaluation against
-% other models - imported in evaluation script
-runtime_data_file = sprintf('Experiment_dataset_%s_ml_model_runtime.mat',...
-    filename(18:end)); % get only the name of the file remove path
-save(runtime_data_file);
+    neural_model = interp1(1:length(neural_model), neural_model, linspace(1,length(neural_model),DATASET_LEN_ORIG));
+    % save runtime data in a file for later analysis and evaluation against
+    % other models - imported in evaluation script
+    runtime_data_file = sprintf('Experiment_dataset_%s_ml_model_runtime.mat',...
+        filename(18:end)); % get only the name of the file remove path
+    save(runtime_data_file);
 end
