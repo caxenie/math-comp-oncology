@@ -4,7 +4,7 @@ clear;
 clc; close all; 
 % data points from experiment along our ML model
 % FIXME check folder or parametrize for experiment id
-dataset = dir('../models/axenie-et-al/Experiment_dataset_*');
+dataset = dir('../models/axenie-et-al/Experiment_dataset_angio-genesis.csvVolk11a*');
 
 % or the other(s) ML models
 % load('../models/cook-et-al/Experiment_dataset_*.mat');
@@ -56,10 +56,44 @@ plot(t1l,y1l);
 plot(t1v,y1v);
 plot(t1h,y1h);
 title('Growth models analysis');
-legend('Data points', 'Neural Model', 'Gompertz','Logistic','vonBertalanffy','Holling');
+legend('Data points', 'GLUECK', 'Gompertz','Logistic','vonBertalanffy','Holling');
 legend('boxoff');
 box off;
-
+%% boxplot evaluation
+figure; set(gcf,'color', 'w'); box off;
+% combine the prediction in unified vector
+x = [M;y1neuro;y1g;y1l;y1v;y1h];
+% create a grouping variable
+g1 = repmat({'Data'}, length(M), 1);
+g2 = repmat({'GLUECK'}, length(y1neuro), 1);
+g3 = repmat({'Gompertz'}, length(y1g), 1);
+g4 = repmat({'Logistic'}, length(y1l), 1);
+g5 = repmat({'vonBertalanffy'}, length(y1v), 1);
+g6 = repmat({'Holling'}, length(y1h), 1);
+g=[g1;g2;g3;g4;g5;g6];
+boxplot(x, g); box off;
+%% load all boxplot data for each dataset for global plot
+d1 = load('plasma_pred.mat');
+d2 = load('mda_pred.mat');
+d3 = load('lm2_pred.mat');
+d4 = load('llc_pred.mat');
+d5 = load('biomark_pred.mat');
+d6 = load('tan_pred.mat');
+d7 = load('volk08_pred.mat');
+d8 = load('volk11b_pred.mat');
+d9 = load('volk11a_pred.mat');
+d10 = load('roland_pred.mat');
+figure; set(gcf,'color', 'w'); box off;
+subplot(2, 5, 1); boxplot(d1.x, d1.g); box off; title('Plasmacytoma');
+subplot(2, 5, 2); boxplot(d2.x, d2.g); box off; title('MDA');
+subplot(2, 5, 3); boxplot(d3.x, d3.g); box off; title('LM2');
+subplot(2, 5, 4); boxplot(d4.x, d4.g); box off; title('LLC');
+subplot(2, 5, 5); boxplot(d5.x, d5.g); box off; title('Biomark');
+subplot(2, 5, 6); boxplot(d6.x, d6.g); box off; title('Tan');
+subplot(2, 5, 7); boxplot(d7.x, d7.g); box off; title('Volk08');
+subplot(2, 5, 8); boxplot(d8.x, d8.g); box off; title('Volk11a');
+subplot(2, 5, 9); boxplot(d9.x, d9.g); box off; title('Volk11b');
+subplot(2, 5, 10); boxplot(d10.x, d10.g); box off; title('Roland');
 %% Evaluate SSE, RMSE, MAPE
 
 % resample

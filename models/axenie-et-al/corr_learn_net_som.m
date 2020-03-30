@@ -129,12 +129,12 @@ else
             clearvars delimiter startRow formatSpec fileID dataArray ans;
             
             % Add filtering for sub-dataset
-            study_id = 'Zibara'; % {Roland, Zibara, Volk08, Tan, Volk11a, Volk11b}
+            study_id = 'Volk11a'; % {Roland, Volk08, Tan, Volk11a, Volk11b}
             switch study_id
                 case 'Roland'
                     sensory_data.x = S1Table.RolandTimedays(~isnan(S1Table.RolandTimedays));
                     sensory_data.y = S1Table.RolandVolumemm3(~isnan(S1Table.RolandVolumemm3));
-                case 'Zibara'
+                case 'Zibara' 
                     sensory_data.x = S1Table.ZibaraTimedays(~isnan(S1Table.ZibaraTimedays));
                     sensory_data.y = S1Table.ZibaraVolumemm3(~isnan(S1Table.ZibaraVolumemm3));
                 case 'Volk08'
