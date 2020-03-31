@@ -23,31 +23,35 @@ idx_upsampled_data = 1:1/upsample_factor:length(datax);
 datax_extrapolated = interp1(idx_data, datax, idx_upsampled_data, 'linear');
 % get the error and plot it as errorbar
 sensory_data.y = sensory_data.y(1:length(datax_extrapolated));
-deviation = sensory_data.y - datax_extrapolated;
+deviation = sensory_data.y - datax_extrapolated';
 sensory_data.x = sensory_data.x(1:length(datax_extrapolated));
-hold on; 
-%plot(sensory_data.x, datax_extrapolated,'r.', 'LineWidth', 2);
+hold on;
+% plot(sensory_data.x, datax_extrapolated,'r.', 'LineWidth', 2);
 if d == 1 % check the dataset type (artificial data vs real world)
-errorbar(sensory_data.x(1:end), datax_extrapolated(1:end), deviation(1:end));
-title('Output Analysis');
-legend('Encoded relation','Decoded learnt relation');
+    errorbar(sensory_data.x(1:end), datax_extrapolated(1:end), deviation(1:end));
+    title('Output Analysis');
+    legend('Encoded relation','Decoded learnt relation');
 end
 % learned realtionship encoded in the Hebbian links
 subplot(4, 1, [3 4]);
 % for 3rd order or higher order add some overlay
-imagesc(rot90(populations(1).Wcross), [0, max(populations(1).Wcross(:))]); box off; colorbar;
+if d == 0
+    imagesc(rot90(rot90(rot90(populations(2).Wcross'))), [0, max(populations(2).Wcross(:))]); box off; colorbar;
+else
+    imagesc(rot90(populations(1).Wcross), [0, max(populations(1).Wcross(:))]); box off; colorbar;
+end
 xlabel('neuron index'); ylabel('neuron index');
 %% learning parameters in different figures
 figure; set(gcf, 'color', 'w');
-plot(learning_params.alphat, 'k', 'LineWidth', 3); box off; ylabel('SOM Learning rate'); 
-xlabel('SOM training epochs'); 
+plot(learning_params.alphat, 'k', 'LineWidth', 3); box off; ylabel('SOM Learning rate');
+xlabel('SOM training epochs');
 figure; set(gcf, 'color', 'w');
-plot(parametrize_learning_law(populations(1).lsize/2, 1, learning_params.t0, learning_params.tf_learn_in, 'invtime'), 'k', 'LineWidth', 3); 
-box off; ylabel('SOM neighborhood size'); xlabel('SOM training epochs'); 
-% hebbian learning 
+plot(parametrize_learning_law(populations(1).lsize/2, 1, learning_params.t0, learning_params.tf_learn_in, 'invtime'), 'k', 'LineWidth', 3);
+box off; ylabel('SOM neighborhood size'); xlabel('SOM training epochs');
+% hebbian learning
 figure; set(gcf, 'color', 'w');
 etat = parametrize_learning_law(0.1, 0.001, learning_params.t0, learning_params.tf_learn_cross, 'invtime');
-plot(etat, 'm', 'LineWidth', 3); box off; ylabel('Hebbian Learning rate'); xlabel('Hebbian learning epochs'); 
+plot(etat, 'm', 'LineWidth', 3); box off; ylabel('Hebbian Learning rate'); xlabel('Hebbian learning epochs');
 % % show the topology learning (self organization)
 figure; set(gcf, 'color', 'w');
 subplot(2,1,1);

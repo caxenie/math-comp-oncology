@@ -22,13 +22,13 @@ WRAP_ON = 0;
 sensory_data.x = [];
 sensory_data.y = [];
 %% SELECT DATA SOURCE (arbitrary function or dataset)
-DATASET = 1; % if dataset is 1 load dataset, otherwise demo sample function
+DATASET = 0; % if dataset is 1 load dataset, otherwise demo sample function
 if DATASET == 0
     %% INIT INPUT DATA - RELATION IS EMBEDDED IN THE INPUT DATA PAIRS
     % demo basic functionality in extracting arbitrary functions
     % set up the interval of interest (i.e. +/- range)ststr
     % set up the interval of interest
-    MIN_VAL         = -1.0;
+    MIN_VAL         = 0.0;
     MAX_VAL         = 1.0;
     sensory_data.range  = MAX_VAL;
     % setup the number of random input samples to generate
@@ -64,14 +64,16 @@ if DATASET == 0
     minVal = min(sensory_data.y);
     maxVal = max(sensory_data.y);
     sensory_data.y = (((sensory_data.y - minVal) * (sensory_data.range - (-sensory_data.range))) / (maxVal - minVal)) + (-sensory_data.range);
-    
     % resample
     sensory_data.x = interp1(1:length(sensory_data.x), sensory_data.x, linspace(1,length(sensory_data.x),NUM_VALS));
     sensory_data.y = interp1(1:length(sensory_data.y), sensory_data.y, linspace(1,length(sensory_data.y),NUM_VALS));
     
     % ground truth (the actual equation in Edgerton et al. 2011)
-    %sensory_data.x = sort(sensory_data.x);
+    % or just normally distributed data
+    sensory_data.x  = MIN_VAL + rand(NUM_VALS, 1)*(MAX_VAL - MIN_VAL);
     sensory_data.y  = 3*(sensory_data.x).*((1 - sensory_data.x.*tanh(1./sensory_data.x))./tanh(1./sensory_data.x));
+    sensory_data_orig = sensory_data;
+    DATASET_LEN_ORIG = length(sensory_data_orig.x);
 else
     % select the dataset of interest
     experiment_dataset = 1; % {1, 2, 3, 4, 5, 6}
@@ -134,7 +136,7 @@ else
                 case 'Roland'
                     sensory_data.x = S1Table.RolandTimedays(~isnan(S1Table.RolandTimedays));
                     sensory_data.y = S1Table.RolandVolumemm3(~isnan(S1Table.RolandVolumemm3));
-                case 'Zibara' 
+                case 'Zibara'
                     sensory_data.x = S1Table.ZibaraTimedays(~isnan(S1Table.ZibaraTimedays));
                     sensory_data.y = S1Table.ZibaraVolumemm3(~isnan(S1Table.ZibaraVolumemm3));
                 case 'Volk08'
@@ -152,7 +154,7 @@ else
             end
             % udpate the filename to contain also sub-dataset and study id
             filename = ['..' filesep '..' filesep 'datasets' filesep '2' filesep 'angio-genesis.csv' study_id];
-
+            
         case 3
             
             % Mastri, Michalis, Tracz, Amanda, & Ebos, John ML. (2019).
@@ -441,10 +443,10 @@ present_tuning_curves(populations(2), sensory_data);
 % normalize weights between [0,1] for display
 populations(1).Wcross = populations(1).Wcross ./ max(populations(1).Wcross(:));
 populations(2).Wcross = populations(2).Wcross ./ max(populations(2).Wcross(:));
-% visualize post-simulation weight matrices encoding learned relation
-[sensory_data, neural_model] = visualize_results(sensory_data, populations, learning_params, DATASET);
-% denromalize the neural model fit to match original input data range
-if DATASET == 1 % for real-data experiments
+if DATASET == 1
+    % visualize post-simulation weight matrices encoding learned relation
+    [sensory_data, neural_model] = visualize_results(sensory_data, populations, learning_params, DATASET);
+    % denormalize the neural model fit to match original input data range
     minVal = min(neural_model);
     maxVal = max(neural_model);
     neural_model = (((neural_model - minVal) * (max(sensory_data_orig.y) - min(sensory_data_orig.y))) / (maxVal - minVal)) + min(sensory_data_orig.y);
@@ -454,5 +456,33 @@ if DATASET == 1 % for real-data experiments
     % other models - imported in evaluation script
     runtime_data_file = sprintf('Experiment_dataset_%s_ml_model_runtime.mat',...
         filename(18:end)); % get only the name of the file remove path
+    save(runtime_data_file);
+else % for the testing of the surgical volume dataset
+    % preprocess for extracting relation, expand matrix
+    Wcross = kron(rot90(rot90(rot90(populations(1).Wcross'))), ones(DATASET_LEN/N_NEURONS, DATASET_LEN/N_NEURONS));
+    Wcross = normalize(Wcross, 'range',[0,1]);
+    imagesc(Wcross, [0, 1]); colorbar;
+    
+    % extract the max weight on each row (if multiple the first one)
+    id_maxv = zeros(DATASET_LEN, 1);
+    for idx = 1:DATASET_LEN
+        [~, id_maxv(idx)] = max(Wcross(idx,:));
+    end
+    % update range for visualization
+    minVal = min(id_maxv);
+    maxVal = max(id_maxv);
+    id_maxv = (id_maxv - minVal) / (maxVal - minVal);
+    id_maxv = id_maxv';
+    % plot
+    figure;
+    set(gcf, 'color', 'w');
+    plot(sensory_data_orig.x, sensory_data_orig.y,'ro', 'LineWidth', 2);
+    hold on;
+    plot(linspace(0, 1, DATASET_LEN), fliplr(id_maxv),'b*', 'LineWidth', 2);
+    neural_model = fliplr(id_maxv);
+    title('Output Analysis'); box off;
+    legend('Encoded relation','Decoded learnt relation'); legend boxoff;
+    
+    runtime_data_file = sprintf('Experiment_dataset_Edgerton_ml_model_runtime.mat');
     save(runtime_data_file);
 end

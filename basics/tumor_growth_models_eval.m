@@ -4,7 +4,7 @@ clear;
 clc; close all; 
 % data points from experiment along our ML model
 % FIXME check folder or parametrize for experiment id
-dataset = dir('../models/axenie-et-al/Experiment_dataset_angio-genesis.csvVolk11a*');
+dataset = dir('../models/axenie-et-al/Experiment_dataset_M*');
 
 % or the other(s) ML models
 % load('../models/cook-et-al/Experiment_dataset_*.mat');
@@ -94,6 +94,14 @@ subplot(2, 5, 7); boxplot(d7.x, d7.g); box off; title('Volk08');
 subplot(2, 5, 8); boxplot(d8.x, d8.g); box off; title('Volk11a');
 subplot(2, 5, 9); boxplot(d9.x, d9.g); box off; title('Volk11b');
 subplot(2, 5, 10); boxplot(d10.x, d10.g); box off; title('Roland');
+
+% paper plots
+figure; set(gcf,'color', 'w'); box off;
+subplot(2, 2, 1); boxplot(d2.x, d2.g); box off; ylabel('Tumor volume (mm^3)'); title('Breast cancer MDA-MB-231 dataset');
+subplot(2, 2, 2); boxplot(d9.x, d9.g); box off; ylabel('Tumor volume (mm^3)'); title('Breast cancer MDA-MB-435 dataset');
+subplot(2, 2, 3); boxplot(d4.x, d4.g); box off; ylabel('Tumor volume (mm^3)'); title('Lung cancer dataset');
+subplot(2, 2, 4); boxplot(d1.x, d1.g); box off; ylabel('Tumor volume (mm^3)'); title('Leukemia dataset');
+
 %% Evaluate SSE, RMSE, MAPE
 
 % resample
@@ -170,3 +178,10 @@ figure(); set(gcf, 'color', 'w');
 plot(models, [BICn, BICg, BICl, BICv, BICh],'k*');
 ylabel('BIC');
 set(gca,'xtick', models, 'xticklabel', names);box off;
+
+% overview
+disp 'SSE'; [SSEn, SSEg, SSEl, SSEv, SSEh]
+disp 'RMSE'; [RMSEn, RMSEg, RMSEl, RMSEv, RMSEh]
+disp 'sMAPE'; [sMAPEn, sMAPEg, sMAPEl, sMAPEv, sMAPEh]
+disp 'AIC'; [AICn, AICg, AICl, AICv, AICh]
+disp 'BIC'; [BICn, BICg, BICl, BICv, BICh]
