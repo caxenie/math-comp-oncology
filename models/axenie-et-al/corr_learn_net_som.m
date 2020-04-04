@@ -1,4 +1,4 @@
-%% SIMPLE IMPLEMENTATION OF THE UNSUPERVISED LEARNING OF RELATIONS NETWORK USING SOMs
+%% GLUECK: Growth pattern Learning for Unsupervised Extraction of Cancer Kinetics
 %% PREPARE ENVIRONMENT
 clear all; clc; close all; format long; pause(2);
 %% INIT SIMULATION
@@ -22,7 +22,7 @@ WRAP_ON = 0;
 sensory_data.x = [];
 sensory_data.y = [];
 %% SELECT DATA SOURCE (arbitrary function or dataset)
-DATASET = 0; % if dataset is 1 load dataset, otherwise demo sample function
+DATASET = 1; % if dataset is 1 load dataset, otherwise demo sample function
 if DATASET == 0
     %% INIT INPUT DATA - RELATION IS EMBEDDED IN THE INPUT DATA PAIRS
     % demo basic functionality in extracting arbitrary functions
@@ -76,7 +76,10 @@ if DATASET == 0
     DATASET_LEN_ORIG = length(sensory_data_orig.x);
 else
     % select the dataset of interest
-    experiment_dataset = 1; % {1, 2, 3, 4, 5, 6}
+    % breast 1, 2 (and sub datasets), 3, 5
+    % lung 4
+    % leukemia 6
+    experiment_dataset = 5; % {1, 2, 3, 4, 5, 6}
     % read from sample datasets
     switch experiment_dataset
         case 1
@@ -131,14 +134,14 @@ else
             clearvars delimiter startRow formatSpec fileID dataArray ans;
             
             % Add filtering for sub-dataset
-            study_id = 'Volk11a'; % {Roland, Volk08, Tan, Volk11a, Volk11b}
+            study_id = 'Volk11b'; % {Roland, Zibara, Volk08, Tan, Volk11a, Volk11b}
             switch study_id
                 case 'Roland'
                     sensory_data.x = S1Table.RolandTimedays(~isnan(S1Table.RolandTimedays));
                     sensory_data.y = S1Table.RolandVolumemm3(~isnan(S1Table.RolandVolumemm3));
                 case 'Zibara'
                     sensory_data.x = S1Table.ZibaraTimedays(~isnan(S1Table.ZibaraTimedays));
-                    sensory_data.y = S1Table.ZibaraVolumemm3(~isnan(S1Table.ZibaraVolumemm3));
+                    sensory_data.y = S1Table.ZibaraVolumemm3(~isnan(S1Table.ZibaraVolumemm3)) * 1000 ;
                 case 'Volk08'
                     sensory_data.x = S1Table.Volk2008Timedays(~isnan(S1Table.Volk2008Timedays));
                     sensory_data.y = S1Table.Volk2008Volumemm3(~isnan(S1Table.Volk2008Volumemm3));

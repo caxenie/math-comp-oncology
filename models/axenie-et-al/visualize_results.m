@@ -23,7 +23,7 @@ idx_upsampled_data = 1:1/upsample_factor:length(datax);
 datax_extrapolated = interp1(idx_data, datax, idx_upsampled_data, 'linear');
 % get the error and plot it as errorbar
 sensory_data.y = sensory_data.y(1:length(datax_extrapolated));
-deviation = sensory_data.y - datax_extrapolated';
+deviation = sensory_data.y - datax_extrapolated;
 sensory_data.x = sensory_data.x(1:length(datax_extrapolated));
 hold on;
 % plot(sensory_data.x, datax_extrapolated,'r.', 'LineWidth', 2);

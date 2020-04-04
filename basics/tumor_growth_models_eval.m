@@ -4,14 +4,15 @@ clear;
 clc; close all; 
 % data points from experiment along our ML model
 % FIXME check folder or parametrize for experiment id
-dataset = dir('../models/axenie-et-al/Experiment_dataset_M*');
+%dataset = dir('../models/axenie-et-al/Experiment_dataset_M*');
 
 % or the other(s) ML models
 % load('../models/cook-et-al/Experiment_dataset_*.mat');
 
 % make file locally available
-copyfile([dataset.folder,'/',dataset.name], './')
-load(dataset.name);
+%copyfile([dataset.folder,'/',dataset.name], './')
+%load(dataset.name);
+load breast8.mat
 global T M
 T = 1:DATASET_LEN_ORIG; T = T';
 M = sensory_data_orig.y;
@@ -95,7 +96,7 @@ subplot(2, 5, 8); boxplot(d8.x, d8.g); box off; title('Volk11a');
 subplot(2, 5, 9); boxplot(d9.x, d9.g); box off; title('Volk11b');
 subplot(2, 5, 10); boxplot(d10.x, d10.g); box off; title('Roland');
 
-% paper plots
+% ECML GLUECK paper plots
 figure; set(gcf,'color', 'w'); box off;
 subplot(2, 2, 1); boxplot(d2.x, d2.g); box off; ylabel('Tumor volume (mm^3)'); title('Breast cancer MDA-MB-231 dataset');
 subplot(2, 2, 2); boxplot(d9.x, d9.g); box off; ylabel('Tumor volume (mm^3)'); title('Breast cancer MDA-MB-435 dataset');
