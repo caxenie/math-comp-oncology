@@ -12,7 +12,7 @@ clc; close all;
 % make file locally available
 %copyfile([dataset.folder,'/',dataset.name], './')
 %load(dataset.name);
-load breast8.mat
+load breast5_experiment.mat
 global T M
 T = 1:DATASET_LEN_ORIG; T = T';
 M = sensory_data_orig.y;
@@ -102,7 +102,12 @@ subplot(2, 2, 1); boxplot(d2.x, d2.g); box off; ylabel('Tumor volume (mm^3)'); t
 subplot(2, 2, 2); boxplot(d9.x, d9.g); box off; ylabel('Tumor volume (mm^3)'); title('Breast cancer MDA-MB-435 dataset');
 subplot(2, 2, 3); boxplot(d4.x, d4.g); box off; ylabel('Tumor volume (mm^3)'); title('Lung cancer dataset');
 subplot(2, 2, 4); boxplot(d1.x, d1.g); box off; ylabel('Tumor volume (mm^3)'); title('Leukemia dataset');
-
+% CBMS PRINCESS paper plots
+figure; set(gcf,'color', 'w'); box off;
+subplot(4, 1, 1); boxplot(d2.x, d2.g); box off; ylabel('Tumor volume (mm^3)'); title('Breast cancer MDA-MB-231 dataset');
+subplot(4, 1, 2); boxplot(d9.x, d9.g); box off; ylabel('Tumor volume (mm^3)'); title('Breast cancer MDA-MB-435 dataset');
+subplot(4, 1, 3); boxplot(d6.x, d6.g); box off; ylabel('Tumor volume (mm^3)'); title('Breast cancer MCF‐7, T47D cell lines dataset');
+subplot(4, 1, 4); boxplot(d3.x, d3.g); box off; ylabel('Tumor volume (mm^3)'); title('Breast cancer LM-4LUC+ dataset');
 %% Evaluate SSE, RMSE, MAPE
 
 % resample
