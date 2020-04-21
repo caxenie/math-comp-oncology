@@ -22,7 +22,7 @@ WRAP_ON = 0;
 sensory_data.x = [];
 sensory_data.y = [];
 %% SELECT DATA SOURCE (arbitrary function or dataset)
-DATASET = 1; % if dataset is 1 load dataset, otherwise demo sample function
+DATASET = 0; % if dataset is 1 load dataset, otherwise demo sample function
 if DATASET == 0
     %% INIT INPUT DATA - RELATION IS EMBEDDED IN THE INPUT DATA PAIRS
     % demo basic functionality in extracting arbitrary functions
