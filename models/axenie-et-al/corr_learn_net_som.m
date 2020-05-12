@@ -462,6 +462,7 @@ if DATASET == 1
     save(runtime_data_file);
 else % for the testing of the surgical volume dataset
     % preprocess for extracting relation, expand matrix
+    figure;
     Wcross = kron(rot90(rot90(rot90(populations(1).Wcross'))), ones(DATASET_LEN/N_NEURONS, DATASET_LEN/N_NEURONS));
     Wcross = normalize(Wcross, 'range',[0,1]);
     imagesc(Wcross, [0, 1]); colorbar;
