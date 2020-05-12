@@ -22,7 +22,7 @@ WRAP_ON = 0;
 sensory_data.x = [];
 sensory_data.y = [];
 %% SELECT DATA SOURCE (arbitrary function or dataset)
-DATASET = 0; % if dataset is 1 load dataset, otherwise demo sample function
+DATASET = 1; % if dataset is 1 load dataset, otherwise demo sample function
 if DATASET == 0
     %% INIT INPUT DATA - RELATION IS EMBEDDED IN THE INPUT DATA PAIRS
     % demo basic functionality in extracting arbitrary functions
@@ -79,7 +79,8 @@ else
     % breast 1, 2 (and sub datasets), 3, 5
     % lung 4
     % leukemia 6
-    experiment_dataset = 5; % {1, 2, 3, 4, 5, 6}
+    % aml 7
+    experiment_dataset = 7; % {1, 2, 3, 4, 5, 6, 7}
     % read from sample datasets
     switch experiment_dataset
         case 1
@@ -275,6 +276,68 @@ else
             % populate the data structure
             sensory_data.x = plasmacytoma.day(~isnan(plasmacytoma.day));
             sensory_data.y = plasmacytoma.mass(~isnan(plasmacytoma.mass));
+            
+        case 7
+            
+            % Shin, Jae-Won, and David J. Mooney. 
+            % "Extracellular matrix stiffness causes systematic variations 
+            % in proliferation and chemosensitivity in myeloid leukemias." 
+            % Proceedings of the National Academy of Sciences 113.43 (2016)
+            
+            experiment_aml = 0; % {0 - Clonal growth, 1 - Stiffness growth}
+            
+            if experiment_aml == 1
+                opts = delimitedTextImportOptions("NumVariables", 4);
+
+                % Specify range and delimiter
+                opts.DataLines = [2, Inf];
+                opts.Delimiter = ",";
+
+                % Specify column names and types
+                opts.VariableNames = ["Time", "Clone1", "Clone2", "Clone3"];
+                opts.VariableTypes = ["double", "double", "double", "double"];
+
+                % Specify file level properties
+                opts.ExtraColumnsRule = "ignore";
+                opts.EmptyLineRule = "read";
+
+                % Import the data
+                filename = ['..'  filesep '..' filesep 'datasets' filesep '7'  filesep 'clonal_growth_data.csv'];
+
+                clonalgrowthdata = readtable(filename, opts);
+
+                % Clear temporary variables
+                clear opts
+                
+                % populate the data structure
+                sensory_data.x = clonalgrowthdata.Time;
+                sensory_data.y = clonalgrowthdata.Clone1;  %{ "Clone1", "Clone2", "Clone3"}
+            else
+                opts = delimitedTextImportOptions("NumVariables", 6);
+                
+                % Specify range and delimiter
+                opts.DataLines = [2, Inf];
+                opts.Delimiter = ",";
+                
+                % Specify column names and types
+                opts.VariableNames = ["Time", "Plastic", "Stiffness0", "Stiffness75", "Stiffness300", "Stiffness3000"];
+                opts.VariableTypes = ["double", "double", "double", "double", "double", "double"];
+
+                % Specify file level properties
+                opts.ExtraColumnsRule = "ignore";
+                opts.EmptyLineRule = "read";
+                
+                % Import the data
+                filename = ['..'  filesep '..' filesep 'datasets' filesep '7'  filesep 'growth_kinetics_data.csv'];
+                growthkineticsdata = readtable(filename, opts);
+                                
+                % Clear temporary variables
+                clear opts
+                
+                % populate the data structure
+                sensory_data.x = growthkineticsdata.Time;
+                sensory_data.y = growthkineticsdata.Plastic;  %{  "Plastic", "Stiffness0", "Stiffness75", "Stiffness300", "Stiffness3000" }
+            end
             
     end
     % save the original dataset
