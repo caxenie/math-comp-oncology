@@ -4,7 +4,7 @@ clear;
 clc; close all; 
 % data points from experiment along our ML model
 % FIXME check folder or parametrize for experiment id
-%dataset = dir('../models/axenie-et-al/Experiment_dataset_M*');
+% dataset = dir('../models/axenie-et-al/Experiment_dataset_M*');
 
 % or the other(s) ML models
 % load('../models/cook-et-al/Experiment_dataset_*.mat');
@@ -12,7 +12,10 @@ clc; close all;
 % make file locally available
 %copyfile([dataset.folder,'/',dataset.name], './')
 %load(dataset.name);
-load breast5_experiment.mat
+
+load Experiment_dataset_clonal_growth_data.csv_ml_model_runtime.mat
+load Experiment_dataset_growth_kinetics_data.csv_ml_model_runtime.mat
+
 global T M
 T = 1:DATASET_LEN_ORIG; T = T';
 M = sensory_data_orig.y;

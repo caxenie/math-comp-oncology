@@ -51,6 +51,11 @@ y0 = min0;
 switch model
     case 'logistic'
         [~, y1] = ode23s(@logistic, tt, y0);
+        saturation_val = y1(end);
+        if length(y1) < length(T)
+            y1(length(T)) = 0;
+            y1(y1==0) = saturation_val;
+        end
     case 'vonBertalanffy'
         [~, y1] = ode23s(@vonbertalanffy, tt, y0);
     case 'Gompertz'
