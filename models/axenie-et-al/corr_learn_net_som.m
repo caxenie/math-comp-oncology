@@ -1,4 +1,4 @@
-%% GLUECK: Growth pattern Learning for Unsupervised Extraction of Cancer Kinetics
+%% Platform for testing ML and mechanistic models in computation oncology
 %% PREPARE ENVIRONMENT
 clear all; clc; close all; format long; pause(2);
 %% INIT SIMULATION
@@ -22,8 +22,7 @@ WRAP_ON = 0;
 sensory_data.x = [];
 sensory_data.y = [];
 %% SELECT DATA SOURCE (arbitrary function or dataset)
-DATASET = 1; % if dataset is 1 load dataset, otherwise demo sample function
-if DATASET == 0
+if DATASET == -2
     %% INIT INPUT DATA - RELATION IS EMBEDDED IN THE INPUT DATA PAIRS
     % demo basic functionality in extracting arbitrary functions
     % set up the interval of interest (i.e. +/- range)ststr
@@ -33,12 +32,13 @@ if DATASET == 0
     sensory_data.range  = MAX_VAL;
     % setup the number of random input samples to generate
     NUM_VALS        = 250;
-    
     % generate NUM_VALS random samples in the given interval
     sensory_data.x  = MIN_VAL + rand(NUM_VALS, 1)*(MAX_VAL - MIN_VAL);
     % dummy relation
     sensory_data.y  = sensory_data.x.^3;
-    
+end
+
+if DATASET == -1
     % test on prediction of surgical volume model learning
     % Edgerton et al. 2011, A novel, patient-specific mathematical
     % pathology approach for assessment of surgical volume:
@@ -74,6 +74,152 @@ if DATASET == 0
     sensory_data.y  = 3*(sensory_data.x).*((1 - sensory_data.x.*tanh(1./sensory_data.x))./tanh(1./sensory_data.x));
     sensory_data_orig = sensory_data;
     DATASET_LEN_ORIG = length(sensory_data_orig.x);
+end
+
+DATASET = 0; % if dataset is 1 load cancer dataset, otherwise drug concentration
+if DATASET == 0
+    % Data from Kuh, Hyo-Jeong, et al.
+    % "Computational model of intracellular pharmacokinetics of paclitaxel."
+    % Journal of Pharmacology and Experimental Therapeutics 293.3 (2000): 761-770.
+
+    
+    experiment_dataset = 2; % {1, 2, 3}
+    % read from sample datasets
+    switch experiment_dataset
+        case 1 % learning the cellular concentration of chemotoxic drug
+            % reproducing Figure 1 left from the Kuh et al. 2000 paper
+            opts = delimitedTextImportOptions("NumVariables", 2);
+            
+            % Specify range and delimiter
+            opts.DataLines = [2, Inf];
+            opts.Delimiter = ",";
+            
+            % Specify column names and types
+            opts.VariableNames = ["time", "concentration"];
+            opts.VariableTypes = ["double", "double"];
+            
+            % Specify file level properties
+            opts.ExtraColumnsRule = "ignore";
+            opts.EmptyLineRule = "read";
+            
+            % Import the data
+            filename = ['..' filesep '..' filesep 'datasets' filesep '0' filesep 'Paclitaxel_10nm_cell_conc.csv'];
+            Paclitaxel10nmcellconc = readtable(filename, opts);
+            % Clear temporary variables
+            clear opts
+            
+            % populate data structure
+            sensory_data.x =  Paclitaxel10nmcellconc.time;
+            sensory_data.y =  Paclitaxel10nmcellconc.concentration;
+            
+                        % save the original dataset
+            sensory_data_orig = sensory_data;
+            DATASET_LEN_ORIG = length(sensory_data_orig.x);
+            % change range
+            sensory_data.range  = 1.0;
+            % convert x axis data to [-sensory_data.range, +sensory_data.range]
+            minVal = min(sensory_data.x);
+            maxVal = max(sensory_data.x);
+            sensory_data.x = (((sensory_data.x - minVal) * (sensory_data.range - (-sensory_data.range))) / (maxVal - minVal)) + (-sensory_data.range);
+            % convert y axis data to [-sensory_data.range, +sensory_data.range]
+            minVal = min(sensory_data.y);
+            maxVal = max(sensory_data.y);
+            sensory_data.y = (((sensory_data.y - minVal) * (sensory_data.range - (-sensory_data.range))) / (maxVal - minVal)) + (-sensory_data.range);
+            % load the data and extrapolate for more density in x axis
+            upsample_factor = 20;
+            datax = sensory_data.x';
+            idx_data = 1:length(datax);
+            idx_upsampled_data = 1:1/upsample_factor:length(datax);
+            datax_extrapolated = interp1(idx_data, datax, idx_upsampled_data, 'linear');
+            % load the data and extrapolate for more density in y axis
+            datay = sensory_data.y';
+            idx_data = 1:length(datay);
+            idx_upsampled_data = 1:1/upsample_factor:length(datay);
+            datay_extrapolated = interp1(idx_data, datay, idx_upsampled_data, 'linear');
+            
+            sensory_data.x = datax_extrapolated;
+            sensory_data.y = datay_extrapolated;
+            
+            
+        case 2 % learning the extracellular concentration of chemotoxic drug
+            % reproducing Figure 1 right from the Kuh et al. 2000 paper
+            opts = delimitedTextImportOptions("NumVariables", 2);
+            
+            % Specify range and delimiter
+            opts.DataLines = [2, Inf];
+            opts.Delimiter = ",";
+            
+            % Specify column names and types
+            opts.VariableNames = ["time", "concentration"];
+            opts.VariableTypes = ["double", "double"];
+            
+            % Specify file level properties
+            opts.ExtraColumnsRule = "ignore";
+            opts.EmptyLineRule = "read";
+            
+            % Import the data
+            filename = ['..' filesep '..' filesep 'datasets' filesep '0' filesep 'Paclitaxel_10nm_medium_conc.csv'];
+            Paclitaxel10nmmediumconc = readtable(filename, opts);
+            % Clear temporary variables
+            clear opts
+            
+            % populate data structure
+            sensory_data.x =  Paclitaxel10nmmediumconc.time;
+            sensory_data.y =  Paclitaxel10nmmediumconc.concentration;
+            
+            % save the original dataset
+            sensory_data_orig = sensory_data;
+            DATASET_LEN_ORIG = length(sensory_data_orig.x);
+            % change range
+            sensory_data.range  = 1.0;
+            % convert x axis data to [-sensory_data.range, +sensory_data.range]
+            minVal = min(sensory_data.x);
+            maxVal = max(sensory_data.x);
+            sensory_data.x = (((sensory_data.x - minVal) * (sensory_data.range - (-sensory_data.range))) / (maxVal - minVal)) + (-sensory_data.range);
+            % convert y axis data to [-sensory_data.range, +sensory_data.range]
+            minVal = min(sensory_data.y);
+            maxVal = max(sensory_data.y);
+            sensory_data.y = (((sensory_data.y - minVal) * (sensory_data.range - (-sensory_data.range))) / (maxVal - minVal)) + (-sensory_data.range);
+            % load the data and extrapolate for more density in x axis
+            upsample_factor = 20;
+            datax = sensory_data.x';
+            idx_data = 1:length(datax);
+            idx_upsampled_data = 1:1/upsample_factor:length(datax);
+            datax_extrapolated = interp1(idx_data, datax, idx_upsampled_data, 'linear');
+            % load the data and extrapolate for more density in y axis
+            datay = sensory_data.y';
+            idx_data = 1:length(datay);
+            idx_upsampled_data = 1:1/upsample_factor:length(datay);
+            datay_extrapolated = interp1(idx_data, datay, idx_upsampled_data, 'linear');
+            
+            sensory_data.x = datax_extrapolated;
+            sensory_data.y = datay_extrapolated;
+            
+        case 3 % learning the underlying volume dynamics in the concentration equations
+            filename=['..' filesep '..' filesep 'datasets' filesep '0' filesep 'Paclitaxel_conc_volume_dynamics'];
+            MIN_VAL         = 0.0;
+            MAX_VAL         = 1.0;
+            sensory_data.range  = MAX_VAL;
+            
+            % setup the number of random input samples to generate
+            NUM_VALS        = 450;
+            % generate NUM_VALS random samples in the given interval
+            sensory_data.x  = MIN_VAL + rand(NUM_VALS, 1)*(MAX_VAL - MIN_VAL);
+            % volume relation given paper parameters in Table 3
+            % from the Kuh et al. 2000 paper
+            Vonecell = 0.00002; % average volume of one cell
+            ICN = 50; % initial cells number
+            Kcellnum = 6; % rate constant for changes in cell number due to drug
+            
+            % Kuh et al. 2000 propose Vc = Vonecell * ICN * exp(Kcellnum*t)
+            % we generate the data as suggested and fed the data to CHIMERA
+            % to learn the underlying volume dynamics
+            sensory_data.y  = Vonecell * ICN * exp(sensory_data.x * Kcellnum);
+            sensory_data_orig = sensory_data;
+            DATASET_LEN_ORIG = length(sensory_data_orig.x);
+            
+    end
+    
 else
     % select the dataset of interest
     % breast 1, 2 (and sub datasets), 3, 5
@@ -509,6 +655,10 @@ present_tuning_curves(populations(2), sensory_data);
 % normalize weights between [0,1] for display
 populations(1).Wcross = populations(1).Wcross ./ max(populations(1).Wcross(:));
 populations(2).Wcross = populations(2).Wcross ./ max(populations(2).Wcross(:));
+if DATASET == 0 && experiment_dataset == 2
+    populations(1).Wcross = rot90(rot90(populations(1).Wcross));
+    populations(2).Wcross = rot90(rot90(populations(2).Wcross));
+end
 if DATASET == 1
     % visualize post-simulation weight matrices encoding learned relation
     [sensory_data, neural_model] = visualize_results(sensory_data, populations, learning_params, DATASET);
